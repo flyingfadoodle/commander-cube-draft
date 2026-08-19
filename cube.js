@@ -1,0 +1,285 @@
+// Sam Black's Commander Cube — 817 cards
+// Source: cubecobra.com/cube/list/38rph
+// With the confirmed LotR replacements from our previous session applied:
+// Gandalf the White -> Vedalken Orrery + Strionic Resonator
+// Radagast -> Momir Vig, Simic Visionary
+// Samwise the Stouthearted -> Shepherd of the Flock
+// Faramir -> Palace Jailer + Court of Grace
+// Samwise Gamgee -> Trostani Discordant + Idol of Endurance
+// Aragorn -> Keeper of Keys
+// Éomer -> Skyline Despot
+// Lembas -> Mind Stone
+// Palantír -> Coercive Portal
+
+const SAM_BLACK_CUBE = [
+// WHITE
+"Adanto Vanguard","Ambitious Farmhand","Anointer Priest","Archangel Elspeth",
+"Archangel of Thune","Archon of Cruelty","Austere Command","Avacyn, Angel of Hope",
+"Baneslayer Angel","Boros Charm","Brimaz, King of Oreskos","Cathar Commando",
+"Champion of the Parish","Clever Concealment","Cloud of Faeries","Containment Priest",
+"Cosmic Intervention","Council's Judgment","Court of Grace","Doomskar",
+"Drannith Magistrate","Eight-and-a-Half-Tails","Elspeth, Knight-Errant",
+"Elspeth, Sun's Champion","Ephemerate","Esper Sentinel","Eternal Dragon",
+"Exile","Felidar Guardian","Flickerwisp","Glimmer Lens","Hallowed Fountain",
+"Hanweir Militia Captain","Heliod, God of the Sun","Hero of Bladehold",
+"Hex Parasite","Idol of Endurance","Intrepid Adversary","Isperia, Supreme Judge",
+"Karmic Guide","Kenrith, the Returned King","Land Tax","Loran of the Third Path",
+"Loran's Escape","Loyal Warhound","Luminous Broodmoth","Lyra Dawnbringer",
+"Mangara, the Diplomat","Mentor of the Meek","Mistveil Plains","Monastery Mentor",
+"Mother of Runes","Myrel, Shield of Argive","Needleverge Pathway","Norika Yamazaki, the Poet",
+"Oust","Palace Jailer","Parallax Wave","Path to Exile","Patron of the Valiant",
+"Phyrexian Rebirth","Phlage, Titan of Fire's Fury","Porcelain Legionnaire",
+"Recruiter of the Guard","Resplendent Angel","Rest in Peace","Restoration Angel",
+"Rout","Sanctum Prelate","Selfless Spirit","Serra the Benevolent",
+"Shepherd of the Flock","Skyclave Apparition","Smothering Tithe",
+"Soldier of the Pantheon","Solitude","Sram, Senior Edificer","Stoneforge Mystic",
+"Sun Titan","Sunbaked Canyon","Sunscorch Regent","Swords to Plowshares",
+"Tempered Steel","Thalia, Guardian of Thraben","Thalia, Heretic Cathar",
+"Thraben Inspector","Tithe Taker","Trostani Discordant","Unexpectedly Absent",
+"Vedalken Orrery","Wrath of God","Zetalpa, Primal Dawn",
+
+// BLUE
+"Arcane Denial","Archive Trap","Archivist of Oghma","Baral, Chief of Compliance",
+"Body of Knowledge","Brainstorm","Cackling Counterpart","Callous Dismissal",
+"Capture of Jingzhou","Clever Impersonator","Commence the Endgame","Compulsive Research",
+"Consecrated Sphinx","Counterspell","Cryptic Command","Curse of the Swine",
+"Cyclonic Rift","Dig Through Time","Diluvian Primordial","Drake Haven",
+"Dungeon Descent","Echo of Eons","Emry, Lurker of the Loch","Faerie Mastermind",
+"Fact or Fiction","Force of Will","Frantic Search","Glen Elendra Archmage",
+"Hullbreaker Horror","Hydroid Krasis","Jace, the Mind Sculptor","Jin-Gitaxias, Core Augur",
+"Kira, Great Glass-Spinner","Laboratory Maniac","Lórien Revealed","Mana Drain",
+"Meloku the Clouded Mirror","Memory Deluge","Miscalculation","Mistbind Clique",
+"Monarch's Favor","Mulldrifter","Mystic Confluence","Narset, Parter of Veils",
+"Nimble Obstructionist","Niv-Mizzet, Parun","Opposition","Overburden",
+"Peregrine Drake","Phantasmal Image","Phyrexian Metamorph","Pongify",
+"Portent","Propaganda","Protean Raider","Quicken","Rapid Hybridization",
+"Reality Shift","Rinhart, Cleaver of Chaos","Risen Reef","Saheeli, Sublime Artificer",
+"Sea Gate Restoration","Snapcaster Mage","Spellseeker","Sphinx of Foresight",
+"Sphinx's Revelation","Stolen by the Fae","Strip Mine","Strionic Resonator",
+"Subtlety","Supreme Will","Tempest Djinn","Temporal Trespass","Thieving Skydiver",
+"Thing in the Ice","Thought Erasure","Timestream Navigator","Tolarian Community College",
+"Treachery","Uro, Titan of Nature's Wrath","Venser, Shaper Savant",
+"Vizier of Many Faces","Wandering Archaic","Wash Away","Windfall","Wizard's Retort",
+
+// BLACK
+"Aetherborn Marauder","Animate Dead","Archon of Cruelty","Athreos, God of Passage",
+"Bane of Progress","Bitter Ordeal","Black Market Connections","Bloodchief Ascension",
+"Body Snatcher","Buried Alive","Cabal Coffers","Caustic Caterpillar","Chainer's Edict",
+"Collective Brutality","Corpse Dance","Corrupt","Crux of Fate","Damnation",
+"Dark Petition","Dark Ritual","Deadly Rollick","Death Cloud","Dismember",
+"Drana, Liberator of Malakir","Dread Presence","Dregs of Sorrow","Dusk Mangler",
+"Eater of the Dead","Entomb","Erebos, God of the Dead","Eriette of the Charmed Apple",
+"Fatal Push","Fleshbag Marauder","Garruk, Apex Predator","Ghoulcaller Gisa",
+"Gloom Surgeon","Grave Titan","Grief","Grima Wormtongue","Grim Tutor",
+"Harvester of Souls","Heap Doll","Hero's Downfall","Hidetsugu and Kairi",
+"Hooded Blightfang","Hymn to Tourach","Inquisition of Kozilek","Invoke Despair",
+"Jadar, Ghoulcaller of Nephalia","Kenrith's Transformation","Leyline of the Void",
+"Liliana of the Veil","Liliana, Dreadhorde General","Lingering Souls",
+"Malakir Rebirth","Massacre Girl","Merciless Eviction","Mikaeus, the Unhallowed",
+"Nether Void","Night's Whisper","Ophiomancer","Overwhelming Remorse",
+"Phage the Untouchable","Plaguecrafter","Praetor's Grasp","Rankle, Master of Pranks",
+"Reanimate","Recurring Nightmare","Sheoldred, the Apocalypse","Sinkhole",
+"Snuff Out","Sudden Edict","Tergrid, God of Fright","The Eldest Reborn",
+"Thoughtseize","Tinybones, Trinket Thief","Tourach, Dread Cantor","Toxic Deluge",
+"Tribute to Hunger","Unburial Rites","Undercity Plunder","Vampire Nighthawk",
+"Victimize","Vraska's Contempt","Waste Not","Witch's Vengeance","Yawgmoth, Thran Physician",
+"Zulaport Cutthroat",
+
+// RED
+"Abrade","Aegar, the Freezing Flame","Anger","Apex of Power","Atsushi, the Blazing Sky",
+"Birgi, God of Storytelling","Blood Moon","Bogardan Hellkite","Bonecrusher Giant",
+"Boros Reckoner","Chain Lightning","Chaos Warp","Charmbreaker Devils","Combustible Gearhulk",
+"Comet, Stellar Pup","Daretti, Scrap Savant","Dockside Extortionist","Dragon Whisperer",
+"Dragonmaster Outcast","Dwarven Blastminer","Faithless Looting","Feldon of the Third Path",
+"Fight with Fire","Firestorm","Flametongue Kavu","Fury","Galvanic Relay",
+"Goblin Engineer","Goblin Guide","Goblin Rabblemaster","Goblin Welder","Goldspan Dragon",
+"Grenzo, Havoc Raiser","Hazoret the Fervent","Hellkite Tyrant","Hero of Oxid Ridge",
+"Hordeling Outburst","Imperial Recruiter","Incisor Glider","Kaleidoscorch",
+"Kazuul's Fury","Kiki-Jiki, Mirror Breaker","Lightning Bolt","Lightning Dragon",
+"Mizzix's Mastery","Mogg Flunkies","Molten Primordial","Neheb, Dreadhorde Champion",
+"Outpost Siege","Passionate Archaeologist","Purphoros, God of the Forge",
+"Pyroblast","Pyroclasm","Raging Goblin","Rakdos Cackler","Rakdos Charm",
+"Rankle, Master of Pranks","Rite of Flame","Roiling Vortex","Seething Song",
+"Shivan Dragon","Sin Prodder","Skullclamp","Sneak Attack","Sol Ring",
+"Stoke the Flames","Sulfurous Springs","Sundering Titan","Tempt with Vengeance",
+"Thrill of Possibility","Thunder Dragon","Thunderbreak Regent","Torbran, Thane of Red Fell",
+"Treasonous Ogre","Urabrask the Hidden","Vexing Devil","Volcanic Offering",
+"Wheel of Fortune","Whims of the Fates","Wildfire","Young Pyromancer","Zo-Zu the Punisher",
+
+// GREEN
+"Acidic Slime","Allosaurus Shepherd","Apex Devastator","Arasta of the Endless Web",
+"Avenger of Zendikar","Beast Within","Beastmaster Ascension","Birds of Paradise",
+"Blossoming Defense","Canopy Vista","Chord of Calling","Courser of Kruphix",
+"Crop Rotation","Dawntreader Elk","Devoted Druid","Dragonscale General",
+"Elder Gargaroth","Elvish Reclaimer","Elvish Visionary","Eternal Witness",
+"Exploration","Faeburrow Elder","Finale of Devastation","Force of Vigor",
+"Forgotten Ancient","Freyalise, Llanowar's Fury","Garruk Wildspeaker","Garruk, Primal Hunter",
+"Genesis","Glimpse of Nature","Gnarlback Rhino","Grazing Gladehart","Green Sun's Zenith",
+"Heroic Intervention","Hydra Omnivore","Incubation Druid","Inscription of Abundance",
+"Jeska's Will","Joraga Warcaller","Kazandu Mammoth","Kodama of the East Tree",
+"Lignify","Llanowar Elves","Managorger Hydra","Marwyn, the Nurturer","Masked Vandal",
+"Mazirek, Kraul Death Priest","Mulch","Nature's Claim","Nature's Lore","Nissa of Shadowed Boughs",
+"Nissa, Voice of Zendikar","Nissa, Who Shakes the World","Old Gnawbone","Oracle of Mul Daya",
+"Overwhelming Stampede","Primal Command","Primeval Titan","Reclamation Sage",
+"Renata, Called to the Hunt","Rhonas the Indomitable","Rishkar, Peema Renegade",
+"Rofellos, Llanowar Emissary","Sanctum Weaver","Selvala, Heart of the Wilds",
+"Shamanic Revelation","Silvos, Rogue Elemental","Skyshroud Claim","Sylvan Library",
+"Sylvan Primordial","Tamiyo's Safekeeping","Temur Sabertooth","Tireless Tracker",
+"Titania, Protector of Argoth","Toxic Deluge","Ulvenwald Hydra","Verdant Catacombs",
+"Vigor","Vorinclex, Voice of Hunger","Whisperwood Elemental","Wilderness Reclamation",
+"Wood Elves","Wren's Run Packmaster","Yedora, Grave Gardener","Yisan, the Wanderer Bard",
+"Zendikar Resurgent",
+
+// MULTICOLOR — AZORIUS (WU)
+"Absorb","Azorius Charm","Hanna, Ship's Navigator","Isperia, Supreme Judge",
+"Lavinia, Azorius Renegade","Narset Transcendent","Reflector Mage","Senate Guildmage",
+"Supreme Verdict","Teferi, Hero of Dominaria","Teferi, Time Raveler",
+"Temporar Archive","Trostani's Judgment",
+
+// DIMIR (UB)
+"Baleful Strix","Connive // Concoct","Dimir Charm","Hostage Taker",
+"Notion Thief","Nymris, Oona's Trickster","Obscura Interceptor",
+"Silumgar, the Drifting Death","Thief of Sanity","Yuriko, the Tiger's Shadow",
+
+// RAKDOS (BR)
+"Angrath, the Flame-Chained","Bituminous Blast","Daretti, Ingenious Iconoclast",
+"Judith, the Scourge Diva","Kroxa, Titan of Death's Hunger","Rakdos Charm",
+"Rakdos, Lord of Riots","Scorpion God",
+
+// GRUUL (RG)
+"Domri, Anarch of Bolas","Huntmaster of the Fells","Klothys, God of Destiny",
+"Pia and Kiran Nalaar","Radha, Heart of Keld","Ruric Thar, the Unbowed",
+"Savage Knuckleblade","Skarrgan Hellkite","Xenagos, God of Revels","Xenagos, the Reveler",
+
+// SELESNYA (GW)
+"Archangel of Thune","Basri's Lieutenant","Conclave Mentor","Emmara, Soul of the Accord",
+"Intangible Virtue","Keeper of Keys","Knight of Autumn","Lathiel, the Bounteous Dawn",
+"Mirari's Wake","Oviya Pashiri, Sage Lifecrafter","Pledge of Unity","Qasali Pridemage",
+"Rhys the Redeemed","Selesnya Charm","Trostani, Selesnya's Voice","Voice of Resurgence",
+
+// ORZHOV (WB)
+"Athreos, Shroud-Veiled","Blood Baron of Vizkopa","Elenda, the Dusk Rose",
+"Karlov of the Ghost Council","Kaya's Guile","Lurrus of the Dream-Den",
+"Orzhov Charm","Reviving Vapors","Teysa Karlov","Vizkopa Guildmage",
+
+// IZZET (UR)
+"Arjun, the Shifting Flame","Cyclonic Rift","Goblin Electromancer","Hypersonic Dragon",
+"Izzet Charm","Keranos, God of Storms","Kess, Dissident Mage","Mizzix of the Izmagnus",
+"Niv-Mizzet, Firemind","Saheeli, the Gifted","Stratus Dancer","The Royal Scions","Whims of the Fates",
+
+// GOLGARI (BG)
+"Izoni, Thousand-Eyed","Jarad, Golgari Lich Lord","Meren of Clan Nel Toth",
+"Nyx Weaver","Pernicious Deed","Putrefy","Ravenous Chupacabra","Spiritmonger",
+"Tasigur, the Golden Fang","The Gitrog Monster","Varolz, the Scar-Striped","Vraska the Unseen",
+
+// BOROS (RW)
+"Aurelia, the Warleader","Boros Charm","Depala, Pilot Exemplar","Iroas, God of Victory",
+"Jor Kadeen, the Prevailer","Legion Warboss","Loxodon Gatekeeper","Najeela, the Blade-Blossom",
+"Razia, Boros Archangel","Skyline Despot","Tajic, Legion's Edge","Zirda, the Dawnwaker",
+
+// SIMIC (GU)
+"Aesi, Tyrant of Gyre Strait","Biomancer's Familiar","Edric, Spymaster of Trest",
+"Ezuri, Claw of Progress","Final Parting","Gaea's Skyfolk","Kinnan, Bonder Prodigy",
+"Kruphix, God of Horizons","Momir Vig, Simic Visionary","Mystic Snake","Oko, Thief of Crowns",
+"Prime Speaker Zegana","Rashmi, Eternities Crafter","Roalesk, Apex Hybrid",
+"Simic Charm","Tatyova, Benthic Druid","Uro, Titan of Nature's Wrath","Zegana, Utopian Speaker",
+
+// THREE-COLOR
+"Korvold, Fae-Cursed King","Narset, Enlightened Master","Riku of Two Reflections",
+"Surrak Dragonclaw","The Locust God","The Scarab God","The Ur-Dragon","Yidris, Maelstrom Wielder",
+"Zur the Enchanter","Anafenza, the Foremost","Chulane, Teller of Tales",
+"Golos, Tireless Pilgrim","Kaalia of the Vast","Kalamax, the Stormsire","Lyzolda, the Blood Witch",
+"Maelstrom Wanderer","Nicol Bolas, God-Pharaoh","Prossh, Skyraider of Kher",
+"Roon of the Hidden Realm","Savage Ventmaw","Sidisi, Brood Tyrant",
+
+// COLORLESS / ARTIFACTS
+"Aether Vial","Basalt Monolith","Batterskull","Blightsteel Colossus","Chromatic Lantern",
+"Coercive Portal","Command Tower","Conjurer's Closet","Darksteel Plate","Dolmen Gate",
+"Duplicant","Eldrazi Displacer","Ensnaring Bridge","Expedition Map","Fellwar Stone",
+"Gilded Lotus","Gonti's Aether Heart","Grafted Exoskeleton","Helm of the Host",
+"Hullbreaker Horror","Ichor Wellspring","Inspiring Statuary","Jeweled Amulet","Juggernaut",
+"Kaldra Compleat","Liliana's Mastery","Lightning Greaves","Lithoform Engine","Lotus Petal",
+"Mazemind Tome","Memory Jar","Mind Stone","Mindslaver","Mox Amber","Myriad Landscape",
+"Nettlecyst","Panharmonicon","Planar Bridge","Relic of Progenitus","Rings of Brighthearth",
+"Smuggler's Copter","Sol Ring","Staff of Nin","Strionic Resonator","Sundial of the Infinite",
+"Swiftfoot Boots","Sword of Feast and Famine","Sword of Fire and Ice","Sword of Sinew and Steel",
+"Thran Dynamo","Thought Vessel","Umezawa's Jitte","Unwinding Clock","Vedalken Orrery",
+"Voltaic Key","Wurmcoil Engine",
+
+// LANDS
+"Arid Mesa","Blood Crypt","Bloodstained Mire","Breeding Pool","Cavern of Souls",
+"City of Brass","Clifftop Retreat","Command Tower","Drowned Catacomb","Exotic Orchard",
+"Flooded Strand","Glacial Fortress","Godless Shrine","Hallowed Fountain","Hinterland Harbor",
+"Isolated Chapel","Mana Confluence","Marsh Flats","Misty Rainforest","Overgrown Tomb",
+"Plateau","Plaza of Heroes","Polluted Delta","Rootbound Crag","Sacred Foundry",
+"Savannah","Scalding Tarn","Scrubland","Steam Vents","Stomping Ground","Strip Mine",
+"Sunpetal Grove","Taiga","Temple Garden","Tropical Island","Tundra","Underground Sea",
+"Verdant Catacombs","Volcanic Island","Wasteland","Windswept Heath","Wooded Foothills",
+"Woodland Cemetery"
+];
+
+// Mark legendary creatures/planeswalkers as potential commanders
+const LEGENDARY_COMMANDERS = new Set([
+"Adanto Vanguard","Archangel Elspeth","Archangel of Thune","Avacyn, Angel of Hope",
+"Brimaz, King of Oreskos","Eight-and-a-Half-Tails","Elspeth, Knight-Errant","Elspeth, Sun's Champion",
+"Heliod, God of the Sun","Hero of Bladehold","Isperia, Supreme Judge","Karmic Guide",
+"Kenrith, the Returned King","Lyra Dawnbringer","Mangara, the Diplomat","Monastery Mentor",
+"Myrel, Shield of Argive","Norika Yamazaki, the Poet","Recruiter of the Guard",
+"Resplendent Angel","Serra the Benevolent","Sram, Senior Edificer","Stoneforge Mystic",
+"Thalia, Guardian of Thraben","Thalia, Heretic Cathar","Trostani Discordant","Zetalpa, Primal Dawn",
+"Baral, Chief of Compliance","Body of Knowledge","Consecrated Sphinx","Emry, Lurker of the Loch",
+"Faerie Mastermind","Glen Elendra Archmage","Jace, the Mind Sculptor","Jin-Gitaxias, Core Augur",
+"Kira, Great Glass-Spinner","Laboratory Maniac","Meloku the Clouded Mirror","Narset, Parter of Veils",
+"Niv-Mizzet, Parun","Saheeli, Sublime Artificer","Snapcaster Mage","Tempest Djinn",
+"Timestream Navigator","Venser, Shaper Savant","Wandering Archaic",
+"Athreos, God of Passage","Drana, Liberator of Malakir","Erebos, God of the Dead",
+"Eriette of the Charmed Apple","Ghoulcaller Gisa","Jadar, Ghoulcaller of Nephalia",
+"Liliana of the Veil","Liliana, Dreadhorde General","Mikaeus, the Unhallowed",
+"Sheoldred, the Apocalypse","Tergrid, God of Fright","Tinybones, Trinket Thief",
+"Tourach, Dread Cantor","Yawgmoth, Thran Physician",
+"Birgi, God of Storytelling","Daretti, Scrap Savant","Dragonmaster Outcast",
+"Feldon of the Third Path","Goblin Rabblemaster","Goblin Welder","Goldspan Dragon",
+"Grenzo, Havoc Raiser","Hazoret the Fervent","Hellkite Tyrant","Imperial Recruiter",
+"Kiki-Jiki, Mirror Breaker","Neheb, Dreadhorde Champion","Purphoros, God of the Forge",
+"Torbran, Thane of Red Fell","Urabrask the Hidden","Young Pyromancer","Zo-Zu the Punisher",
+"Allosaurus Shepherd","Avenger of Zendikar","Elder Gargaroth","Elvish Reclaimer",
+"Eternal Witness","Freyalise, Llanowar's Fury","Garruk Wildspeaker","Garruk, Primal Hunter",
+"Genesis","Joraga Warcaller","Kodama of the East Tree","Managorger Hydra","Marwyn, the Nurturer",
+"Mazirek, Kraul Death Priest","Nissa of Shadowed Boughs","Nissa, Voice of Zendikar",
+"Nissa, Who Shakes the World","Old Gnawbone","Oracle of Mul Daya","Primeval Titan",
+"Rhonas the Indomitable","Rishkar, Peema Renegade","Rofellos, Llanowar Emissary",
+"Selvala, Heart of the Wilds","Sylvan Primordial","Titania, Protector of Argoth",
+"Ulvenwald Hydra","Vorinclex, Voice of Hunger","Whisperwood Elemental","Yedora, Grave Gardener",
+"Yisan, the Wanderer Bard",
+// Multicolor
+"Hanna, Ship's Navigator","Isperia, Supreme Judge","Lavinia, Azorius Renegade",
+"Narset Transcendent","Teferi, Hero of Dominaria","Teferi, Time Raveler",
+"Notion Thief","Nymris, Oona's Trickster","Silumgar, the Drifting Death","Yuriko, the Tiger's Shadow",
+"Judith, the Scourge Diva","Kroxa, Titan of Death's Hunger","Rakdos, Lord of Riots","Scorpion God",
+"Klothys, God of Destiny","Radha, Heart of Keld","Ruric Thar, the Unbowed","Xenagos, God of Revels",
+"Xenagos, the Reveler","Emmara, Soul of the Accord","Keeper of Keys","Lathiel, the Bounteous Dawn",
+"Oviya Pashiri, Sage Lifecrafter","Rhys the Redeemed","Trostani, Selesnya's Voice","Voice of Resurgence",
+"Athreos, Shroud-Veiled","Elenda, the Dusk Rose","Karlov of the Ghost Council","Lurrus of the Dream-Den",
+"Teysa Karlov","Arjun, the Shifting Flame","Keranos, God of Storms","Kess, Dissident Mage",
+"Mizzix of the Izmagnus","Niv-Mizzet, Firemind","Saheeli, the Gifted","The Royal Scions",
+"Jarad, Golgari Lich Lord","Meren of Clan Nel Toth","Tasigur, the Golden Fang","The Gitrog Monster",
+"Varolz, the Scar-Striped","Vraska the Unseen","Aurelia, the Warleader","Depala, Pilot Exemplar",
+"Iroas, God of Victory","Jor Kadeen, the Prevailer","Najeela, the Blade-Blossom",
+"Razia, Boros Archangel","Skyline Despot","Tajic, Legion's Edge","Zirda, the Dawnwaker",
+"Aesi, Tyrant of Gyre Strait","Edric, Spymaster of Trest","Ezuri, Claw of Progress",
+"Kinnan, Bonder Prodigy","Kruphix, God of Horizons","Momir Vig, Simic Visionary",
+"Oko, Thief of Crowns","Prime Speaker Zegana","Rashmi, Eternities Crafter","Roalesk, Apex Hybrid",
+"Tatyova, Benthic Druid","Uro, Titan of Nature's Wrath","Zegana, Utopian Speaker",
+// Three-color
+"Korvold, Fae-Cursed King","Narset, Enlightened Master","Riku of Two Reflections",
+"Surrak Dragonclaw","The Locust God","The Scarab God","The Ur-Dragon","Yidris, Maelstrom Wielder",
+"Zur the Enchanter","Anafenza, the Foremost","Chulane, Teller of Tales",
+"Golos, Tireless Pilgrim","Kaalia of the Vast","Kalamax, the Stormsire","Lyzolda, the Blood Witch",
+"Maelstrom Wanderer","Nicol Bolas, God-Pharaoh","Prossh, Skyraider of Kher",
+"Roon of the Hidden Realm","Savage Ventmaw","Sidisi, Brood Tyrant",
+// Colorless
+"Blightsteel Colossus","Duplicant","Eldrazi Displacer","Helm of the Host",
+"Golos, Tireless Pilgrim","Wurmcoil Engine",
+]);
+
+window.CUBE_DATA = { cards: SAM_BLACK_CUBE, commanders: LEGENDARY_COMMANDERS };
