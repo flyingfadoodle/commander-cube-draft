@@ -158,6 +158,45 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
 .import-area{display:flex;flex-direction:column;gap:8px;}
 .import-area textarea{width:100%;height:200px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;color:var(--ink);font-size:12px;padding:10px;font-family:monospace;outline:none;resize:vertical;}
 .import-area textarea:focus{border-color:var(--gold);}
+
+/* ── COLOR INDICATORS ── */
+.color-strip{
+  display:flex;gap:2px;justify-content:center;padding:3px 4px 2px;
+  min-height:10px;
+}
+.color-pip{
+  width:10px;height:10px;border-radius:50%;flex-shrink:0;
+  box-shadow:0 1px 2px rgba(0,0,0,.5);
+}
+.pip-W{background:#f8f4e0;border:1px solid #b0a860;}
+.pip-U{background:#3a78c0;}
+.pip-B{background:#2a2030;border:1px solid #604888;}
+.pip-R{background:#c03820;}
+.pip-G{background:#208840;}
+.pip-C{background:#888078;border:1px solid #aaa090;}
+/* colored bottom border by identity */
+.card[data-colors="W"]{border-bottom:3px solid #d4c870;}
+.card[data-colors="U"]{border-bottom:3px solid #3a78c0;}
+.card[data-colors="B"]{border-bottom:3px solid #6040a0;}
+.card[data-colors="R"]{border-bottom:3px solid #c03820;}
+.card[data-colors="G"]{border-bottom:3px solid #208840;}
+.card[data-colors="WU"],.card[data-colors="UW"]{border-bottom:3px solid #6090d0;}
+.card[data-colors="WB"],.card[data-colors="BW"]{border-bottom:3px solid #806090;}
+.card[data-colors="WR"],.card[data-colors="RW"]{border-bottom:3px solid #d08030;}
+.card[data-colors="WG"],.card[data-colors="GW"]{border-bottom:3px solid #70a840;}
+.card[data-colors="UB"],.card[data-colors="BU"]{border-bottom:3px solid #3850a0;}
+.card[data-colors="UR"],.card[data-colors="RU"]{border-bottom:3px solid #9040a0;}
+.card[data-colors="UG"],.card[data-colors="GU"]{border-bottom:3px solid #3090a0;}
+.card[data-colors="BR"],.card[data-colors="RB"]{border-bottom:3px solid #802020;}
+.card[data-colors="BG"],.card[data-colors="GB"]{border-bottom:3px solid #305030;}
+.card[data-colors="RG"],.card[data-colors="GR"]{border-bottom:3px solid #907830;}
+.card[data-colors="C"]{border-bottom:3px solid #888078;}
+.card[data-colors=""]{border-bottom:3px solid #888078;}
+/* multicolor (3+) gold */
+.card.multicolor{border-bottom:3px solid var(--gold);}
+/* pool color dot */
+.pool-color-pips{display:flex;gap:2px;margin-top:2px;}
+.pool-pip{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,.4);}
 </style>
 </head>
 <body>
@@ -568,6 +607,7 @@ function loadCardData(name, cb) {
           toughness: data.toughness || '',
           loyalty: data.loyalty || '',
           image: data.image_uris?.normal || data.card_faces?.[0]?.image_uris?.normal || '',
+          color_identity: data.color_identity || [],
         };
         cardDataCache[name] = card;
         (cardDataQueue[name] || []).forEach(fn => fn(card));
@@ -585,6 +625,74 @@ function loadCardData(name, cb) {
 function formatMana(cost) {
   // Convert {W}{U}{2} style to readable
   return cost.replace(/[{}]/g,' ').replace(/\s+/g,' ').trim();
+}
+
+
+// ── COLOR HELPERS ─────────────────────────────────────────
+const COLOR_HEX = {W:'#d4c870',U:'#3a78c0',B:'#6040a0',R:'#c03820',G:'#208840',C:'#888078'};
+const COLOR_BG  = {W:'#f8f4e0',U:'#3a78c0',B:'#2a2030',R:'#c03820',G:'#208840',C:'#888078'};
+
+function getColors(data) {
+  // Returns array of color letters e.g. ['W','U']
+  if (!data) return [];
+  const ci = data.color_identity || [];
+  if (ci.length) return ci;
+  // fallback: parse mana cost
+  const cost = data.mana_cost || '';
+  const found = [];
+  for (const c of ['W','U','B','R','G']) { if (cost.includes(`{${c}}`)) found.push(c); }
+  return found.length ? found : (data.type_line?.includes('Land') ? [] : ['C']);
+}
+
+function applyColorToCard(el, data) {
+  const colors = getColors(data);
+  const key = colors.join('');
+  el.dataset.colors = key;
+  if (colors.length >= 3) el.classList.add('multicolor');
+
+  // Color pip strip
+  let strip = el.querySelector('.color-strip');
+  if (!strip) {
+    strip = document.createElement('div');
+    strip.className = 'color-strip';
+    // Insert before name strip
+    const nameStrip = el.querySelector('.card-name-strip');
+    if (nameStrip) el.insertBefore(strip, nameStrip);
+    else el.appendChild(strip);
+  }
+  strip.innerHTML = '';
+  if (colors.length === 0) {
+    // colorless
+    const pip = document.createElement('div');
+    pip.className = 'color-pip pip-C';
+    strip.appendChild(pip);
+  } else {
+    colors.forEach(c => {
+      const pip = document.createElement('div');
+      pip.className = `color-pip pip-${c}`;
+      strip.appendChild(pip);
+    });
+  }
+}
+
+function applyColorToPool(el, data) {
+  const colors = getColors(data);
+  let pips = el.querySelector('.pool-color-pips');
+  if (!pips) {
+    pips = document.createElement('div');
+    pips.className = 'pool-color-pips';
+    el.appendChild(pips);
+  }
+  pips.innerHTML = '';
+  const toShow = colors.length ? colors : ['C'];
+  toShow.forEach(c => {
+    const pip = document.createElement('div');
+    pip.className = 'pool-pip';
+    pip.style.background = COLOR_BG[c] || '#888';
+    if (c === 'W') pip.style.border = '1px solid #b0a860';
+    if (c === 'B') pip.style.border = '1px solid #604888';
+    pips.appendChild(pip);
+  });
 }
 
 // ── CARD ELEMENT (image-first, MTGO style) ──────────────────
@@ -620,6 +728,7 @@ function buildCardEl(name) {
       imgWrap.innerHTML = '';
       imgWrap.appendChild(img);
     }
+    applyColorToCard(el, data);
   });
 
   // Hover: show large preview
@@ -715,6 +824,7 @@ function makePoolCard(name, isCmd) {
     if (data.power) ptEl.textContent = `${data.power}/${data.toughness}`;
     else if (data.loyalty) ptEl.textContent = `[${data.loyalty}]`;
     else ptEl.textContent = '';
+    applyColorToPool(el, data);
   });
 
   el.addEventListener('mouseenter', (e) => showPreview(name, e));
