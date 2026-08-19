@@ -99,7 +99,7 @@ const SAM_BLACK_CUBE = [
 "Osgir, the Reconstructor","Éomer, King of Rohan","Quintorius, Loremaster","Aurelia, the Warleader","Duke Ulder Ravengard","Gisela, Blade of Goldnight","Hydroid Krasis","Lonis, Cryptozoologist",
 "The Goose Mother","Edric, Spymaster of Trest","Inga and Esika","Kydele, Chosen of Kruphix","Imoti, Celebrant of Bounty","Aesi, Tyrant of Gyre Strait","Lagrella, the Magpie","Rigo, Streetwise Mentor",
 "Shanna, Purifying Blade","Brenard, Ginger Sculptor","Roon of the Hidden Realm","Aminatou, the Fateshifter","Raffine, Scheming Seer","Sefris of the Hidden Ways","Toluz, Clever Conductor","Yennett, Cryptic Sovereign",
-"Marchesa, Dealer of Death","Cormela, Glamour Thief","Marchesa, the Black Rose","Evelyn, the Covetous","Sol'Kanar the Tainted","Gyrus, Waker of Corpses","Henzie "Toolbox" Torre","Slimefoot and Squee",
+"Marchesa, Dealer of Death","Cormela, Glamour Thief","Marchesa, the Black Rose","Evelyn, the Covetous","Sol'Kanar the Tainted","Gyrus, Waker of Corpses","Henzie \"Toolbox\" Torre","Slimefoot and Squee",
 "Lord Windgrace","Sek'Kuar, Deathkeeper","Atla Palani, Nest Tender","Jetmir, Nexus of Revels","Kitt Kanto, Mayhem Diva","Marisi, Breaker of the Coil","Phabine, Boss's Confidant","Jan Jansen, Chaos Crafter",
 "Zurgo Stormrender","Queen Marchesa","Neriv, Crackling Vanguard","Piru, the Volatile","Animar, Soul of Elements","Eshki Dragonclaw","Rashmi and Ragavan","Borborygmos and Fblthp",
 "Xyris, the Writhing Storm","Tayam, Luminous Enigma","Thalia and The Gitrog Monster","Ghave, Guru of Spores","Colfenor, the Last Yew","Karador, Ghost Chieftain","Narset, Jeskai Waymaster","Aragorn, King of Gondor",
