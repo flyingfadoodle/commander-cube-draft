@@ -499,16 +499,12 @@ function shuffle(arr) {
 }
 
 function isCommander(name) {
-  // If we have Scryfall data, use it authoritatively
+  // Only trust Scryfall data — never show star based on hardcoded list
   const data = cardDataCache[name];
-  if (data) {
-    const typeLine = data.type_line || '';
-    const isLegendary = typeLine.includes('Legendary');
-    const isCreatureOrPW = typeLine.includes('Creature') || typeLine.includes('Planeswalker');
-    return isLegendary && isCreatureOrPW;
-  }
-  // Fallback to hardcoded set until data loads
-  return window.CUBE_DATA.commanders.has(name);
+  if (!data) return false; // unknown until loaded
+  const typeLine = data.type_line || '';
+  return typeLine.includes('Legendary') &&
+    (typeLine.includes('Creature') || typeLine.includes('Planeswalker'));
 }
 
 function startDraft(nPlayers, packSize, picksPerPick, cubeList) {
@@ -855,7 +851,8 @@ function applyColorToPool(el, data) {
 // ── CARD ELEMENT (image-first, MTGO style) ──────────────────
 function buildCardEl(name) {
   const el = document.createElement('div');
-  el.className = 'card' + (isCommander(name) ? ' commander-card' : '');
+  // Don't add commander-card until Scryfall confirms it
+  el.className = 'card';
   if (name === state?.sel1) el.classList.add('selected');
   if (name === state?.sel2) el.classList.add('selected2');
   el.dataset.name = name;
@@ -1216,6 +1213,26 @@ function openCubeViewer(fromGame = false) {
   document.getElementById('cube-viewer').classList.add('on');
   document.getElementById('cv-back-btn').dataset.fromGame = fromGame ? '1' : '0';
   renderCubeViewer();
+  preloadCubeData();
+}
+
+function preloadCubeData() {
+  const cubeList = (state?.cubeList) || window.CUBE_DATA.cards;
+  // Load cards that aren't cached yet, in batches to avoid hammering Scryfall
+  const unloaded = cubeList.filter(n => !cardDataCache[n]);
+  let i = 0;
+  function loadNext() {
+    if (i >= unloaded.length) return;
+    const name = unloaded[i++];
+    loadCardData(name, () => {
+      // Re-render checklist periodically as data arrives
+      if (cvViewMode === 'list' && i % 20 === 0) renderChecklistView();
+      if (cvViewMode === 'image' && i % 20 === 0) renderCubeViewer();
+    });
+    // Scryfall rate limit: ~100ms between requests
+    setTimeout(loadNext, 110);
+  }
+  loadNext();
 }
 
 document.getElementById('cv-back-btn').addEventListener('click', () => {
@@ -1315,7 +1332,7 @@ function renderCubeViewer() {
 
   filtered.forEach(name => {
     const card = document.createElement('div');
-    card.className = 'cv-card';
+    card.className = 'cv-card'; // commander-card added after Scryfall confirms
     card.dataset.name = name;
 
     const placeholder = document.createElement('div');
