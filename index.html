@@ -245,6 +245,48 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
 .cv-card-name{font-size:9px;font-weight:700;color:var(--ink);padding:3px 5px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cv-card.commander-card::after{content:'★';position:absolute;top:5px;right:6px;font-size:12px;color:var(--gold);text-shadow:0 1px 3px rgba(0,0,0,.9);pointer-events:none;}
 .cv-loading{padding:40px;text-align:center;color:var(--ink3);font-size:14px;}
+
+.cv-view-btn{
+  background:var(--surface2);border:none;color:var(--ink3);
+  font-size:11px;font-weight:700;padding:5px 10px;cursor:pointer;
+  font-family:inherit;transition:all .15s;
+}
+.cv-view-btn.active{background:var(--gold);color:#1a1208;}
+.cv-view-btn:hover:not(.active){color:var(--gold);}
+
+/* checklist view */
+.cv-checklist{
+  padding:12px 20px;overflow-y:auto;flex:1;
+  display:none;
+  column-count:3;column-gap:16px;
+}
+.cv-checklist.on{display:block;}
+.cv-grid.hidden{display:none;}
+
+.cl-section{break-inside:avoid;margin-bottom:16px;}
+.cl-section-label{
+  font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;
+  padding:4px 0 6px;border-bottom:2px solid var(--border2);margin-bottom:4px;
+  display:flex;align-items:center;gap:6px;
+}
+.cl-section-label .cl-pip{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.cl-row{
+  display:flex;align-items:center;gap:7px;
+  padding:3px 4px;border-radius:4px;cursor:pointer;
+  transition:background .1s;border-bottom:1px solid var(--border);
+  break-inside:avoid;
+}
+.cl-row:hover{background:var(--surface2);}
+.cl-check{
+  width:14px;height:14px;border-radius:3px;border:1px solid var(--border2);
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:9px;transition:all .15s;
+}
+.cl-row.checked .cl-check{background:var(--gold);border-color:var(--gold);color:#1a1208;}
+.cl-row.checked .cl-name{text-decoration:line-through;opacity:.5;}
+.cl-name{font-size:12px;color:var(--ink);flex:1;}
+.cl-type{font-size:10px;color:var(--ink3);white-space:nowrap;}
+.cl-star{font-size:10px;color:var(--gold);}
 </style>
 </head>
 <body>
@@ -372,11 +414,16 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
       <option value="type">Sort: Type</option>
     </select>
     <span class="cv-count" id="cv-count"></span>
+    <div style="display:flex;gap:4px;border:1px solid var(--border2);border-radius:6px;overflow:hidden;flex-shrink:0;">
+      <button class="cv-view-btn active" id="cv-view-image" title="Image view">🖼 Images</button>
+      <button class="cv-view-btn" id="cv-view-list" title="Checklist view">☰ Checklist</button>
+    </div>
     <button class="btn" id="cv-back-btn">← Back to draft</button>
   </div>
   <div class="cv-grid" id="cv-grid">
     <div class="cv-loading">Loading cube… images will appear as they load.</div>
   </div>
+  <div class="cv-checklist" id="cv-checklist"></div>
 </div>
 
 <!-- card hover preview -->
@@ -1313,6 +1360,139 @@ function renderCubeViewer() {
 
     grid.appendChild(card);
   });
+}
+
+
+// ── CUBE VIEWER TOGGLE ────────────────────────────────────
+let cvViewMode = 'image'; // 'image' | 'list'
+let clChecked = new Set(); // checked card names
+
+document.getElementById('cv-view-image').addEventListener('click', () => {
+  cvViewMode = 'image';
+  document.getElementById('cv-view-image').classList.add('active');
+  document.getElementById('cv-view-list').classList.remove('active');
+  document.getElementById('cv-grid').classList.remove('hidden');
+  document.getElementById('cv-checklist').classList.remove('on');
+  renderCubeViewer();
+});
+
+document.getElementById('cv-view-list').addEventListener('click', () => {
+  cvViewMode = 'list';
+  document.getElementById('cv-view-list').classList.add('active');
+  document.getElementById('cv-view-image').classList.remove('active');
+  document.getElementById('cv-grid').classList.add('hidden');
+  document.getElementById('cv-checklist').classList.add('on');
+  renderChecklistView();
+});
+
+const COLOR_SECTIONS = [
+  { key:'W', label:'White',     pip:'#d4c870' },
+  { key:'U', label:'Blue',      pip:'#3a78c0' },
+  { key:'B', label:'Black',     pip:'#6040a0' },
+  { key:'R', label:'Red',       pip:'#c03820' },
+  { key:'G', label:'Green',     pip:'#208840' },
+  { key:'M', label:'Multicolor',pip:'var(--gold)' },
+  { key:'C', label:'Colorless / Lands', pip:'#888078' },
+];
+
+function renderChecklistView() {
+  const cubeList = (state?.cubeList) || window.CUBE_DATA.cards;
+  const el = document.getElementById('cv-checklist');
+
+  // Filter same as image view
+  let filtered = cubeList.filter(name => {
+    if (cvSearch && !name.toLowerCase().includes(cvSearch)) return false;
+    if (cvFilter === 'all') return true;
+    const colors = cvGetColors(name);
+    if (colors === null) return true;
+    return cvColorGroup(colors) === cvFilter;
+  });
+
+  // Group by color section
+  const groups = {};
+  COLOR_SECTIONS.forEach(s => groups[s.key] = []);
+
+  filtered.forEach(name => {
+    const colors = cvGetColors(name);
+    const group = colors === null ? 'C' : cvColorGroup(colors);
+    if (groups[group]) groups[group].push(name);
+    else groups['C'].push(name);
+  });
+
+  // Sort within each group
+  Object.keys(groups).forEach(k => {
+    groups[k].sort((a,b) => a.localeCompare(b));
+  });
+
+  el.innerHTML = '';
+
+  const totalChecked = clChecked.size;
+  const totalFiltered = filtered.length;
+
+  // Summary line
+  const summary = document.createElement('div');
+  summary.style.cssText = 'font-size:11px;color:var(--ink3);margin-bottom:12px;column-span:all;';
+  summary.textContent = `${totalFiltered} cards · ${totalChecked} checked`;
+  el.appendChild(summary);
+
+  COLOR_SECTIONS.forEach(section => {
+    const cards = groups[section.key];
+    if (!cards.length) return;
+
+    if (cvFilter !== 'all' && cvFilter !== section.key) return;
+
+    const sec = document.createElement('div');
+    sec.className = 'cl-section';
+
+    const lbl = document.createElement('div');
+    lbl.className = 'cl-section-label';
+    lbl.innerHTML = `<div class="cl-pip" style="background:${section.pip}"></div>${section.label} (${cards.length})`;
+    sec.appendChild(lbl);
+
+    cards.forEach(name => {
+      const row = document.createElement('div');
+      row.className = 'cl-row' + (clChecked.has(name) ? ' checked' : '');
+
+      const check = document.createElement('div');
+      check.className = 'cl-check';
+      if (clChecked.has(name)) check.textContent = '✓';
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'cl-name';
+      nameEl.textContent = name;
+
+      const isCmd = isCommander(name);
+      const star = document.createElement('div');
+      star.className = 'cl-star';
+      if (isCmd) star.textContent = '★';
+
+      const typeEl = document.createElement('div');
+      typeEl.className = 'cl-type';
+      const data = cardDataCache[name];
+      if (data) typeEl.textContent = (data.type_line || '').replace('Legendary ','').split('—')[0].trim();
+
+      row.appendChild(check);
+      row.appendChild(nameEl);
+      row.appendChild(star);
+      row.appendChild(typeEl);
+
+      row.addEventListener('click', () => {
+        if (clChecked.has(name)) clChecked.delete(name);
+        else clChecked.add(name);
+        renderChecklistView();
+      });
+
+      row.addEventListener('mouseenter', e => showPreview(name, e));
+      row.addEventListener('mousemove', e => posPreview(e));
+      row.addEventListener('mouseleave', hidePreview);
+
+      sec.appendChild(row);
+    });
+
+    el.appendChild(sec);
+  });
+
+  document.getElementById('cv-count').textContent = `${filtered.length} cards`;
 }
 
 // ── UTILS ──────────────────────────────────────────────────
