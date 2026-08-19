@@ -58,27 +58,27 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
 .pack-sub{font-size:13px;color:var(--ink3);}
 .pack-instruction{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--ink2);margin-bottom:14px;}
 .pack-instruction b{color:var(--gold);}
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;}
+.cards-grid{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;padding-bottom:8px;}
 
 /* card display */
 .card{
-  background:var(--surface);border:1px solid var(--border2);border-radius:7px;
-  padding:10px 12px;cursor:pointer;transition:all .12s;position:relative;
-  display:flex;flex-direction:column;gap:3px;
+  background:var(--surface2);border:2px solid transparent;border-radius:8px;
+  padding:3px;cursor:pointer;transition:all .12s;position:relative;
+  display:flex;flex-direction:column;
+  width:120px;flex-shrink:0;
 }
-.card:hover{border-color:var(--gold);background:var(--surface2);}
-.card.selected{border-color:var(--gold);background:var(--surface3);box-shadow:0 0 0 2px var(--gold);}
-.card.selected2{border-color:#4a90d8;background:#1a2030;box-shadow:0 0 0 2px #4a90d8;}
-.card.commander-card{border-left:3px solid var(--gold2);}
-.card-name{font-size:13px;font-weight:700;color:var(--ink);line-height:1.3;}
-.card-manacost{font-size:11px;color:var(--ink2);font-family:monospace;}
-.card-type{font-size:10px;color:var(--ink3);font-style:italic;margin-top:1px;}
-.card-text{font-size:11px;color:var(--ink2);line-height:1.5;margin-top:4px;border-top:1px solid var(--border);padding-top:4px;}
-.card-pt{font-size:11px;font-weight:700;color:var(--ink);text-align:right;margin-top:2px;}
-.card-loyalty{font-size:11px;font-weight:700;color:var(--blue);text-align:right;margin-top:2px;}
-.card-badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:.04em;margin-top:3px;}
-.badge-commander{background:rgba(200,160,64,.25);color:var(--gold);}
-.card-loading{font-size:10px;color:var(--ink3);font-style:italic;}
+.card:hover{border-color:var(--gold);transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,.5);}
+.card.selected{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold),0 6px 16px rgba(200,160,64,.4);transform:translateY(-4px);}
+.card.selected2{border-color:#4a90d8;box-shadow:0 0 0 2px #4a90d8,0 6px 16px rgba(74,144,216,.4);transform:translateY(-4px);}
+.card.commander-card::after{content:'★';position:absolute;top:6px;right:6px;font-size:13px;color:var(--gold);text-shadow:0 1px 3px rgba(0,0,0,.8);z-index:2;pointer-events:none;}
+.card-img{width:100%;border-radius:6px;display:block;aspect-ratio:5/7;object-fit:cover;background:var(--surface3);}
+.card-img-placeholder{width:100%;aspect-ratio:5/7;background:var(--surface3);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--border2);}
+.card-name-strip{
+  font-size:9px;font-weight:700;color:var(--ink);
+  padding:3px 4px 2px;text-align:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.card-badge{display:none;}
 
 /* pool / sidebar */
 .sidebar{border-left:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;overflow:hidden;min-height:0;}
@@ -90,8 +90,8 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
 .pool-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin:10px 0 6px;padding-bottom:3px;border-bottom:1px solid var(--border);}
 .pool-card{
   background:var(--surface2);border:1px solid var(--border);border-radius:6px;
-  padding:8px 10px;cursor:pointer;transition:background .1s;
-  margin-bottom:5px;
+  padding:7px 9px;cursor:pointer;transition:background .1s;
+  margin-bottom:4px;
 }
 .pool-card:hover{background:var(--surface3);border-color:var(--border2);}
 .pool-card.is-commander{border-left:3px solid var(--gold2);}
@@ -138,8 +138,8 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
 /* card hover preview */
 #card-preview{
   position:fixed;z-index:500;pointer-events:none;
-  width:240px;border-radius:10px;overflow:hidden;
-  box-shadow:0 8px 32px rgba(0,0,0,.6);
+  width:280px;border-radius:10px;overflow:hidden;
+  box-shadow:0 12px 40px rgba(0,0,0,.7);
   display:none;
 }
 #card-preview img{width:100%;display:block;}
@@ -587,59 +587,42 @@ function formatMana(cost) {
   return cost.replace(/[{}]/g,' ').replace(/\s+/g,' ').trim();
 }
 
-// ── CARD ELEMENT ────────────────────────────────────────────
+// ── CARD ELEMENT (image-first, MTGO style) ──────────────────
 function buildCardEl(name) {
   const el = document.createElement('div');
   el.className = 'card' + (isCommander(name) ? ' commander-card' : '');
-  if (name === state.sel1) el.classList.add('selected');
-  if (name === state.sel2) el.classList.add('selected2');
+  if (name === state?.sel1) el.classList.add('selected');
+  if (name === state?.sel2) el.classList.add('selected2');
   el.dataset.name = name;
 
-  // Name row immediately
-  const nameRow = document.createElement('div');
-  nameRow.style.display = 'flex';
-  nameRow.style.justifyContent = 'space-between';
-  nameRow.style.alignItems = 'baseline';
-  const nameEl = document.createElement('div');
-  nameEl.className = 'card-name';
-  nameEl.textContent = name;
-  const manaEl = document.createElement('div');
-  manaEl.className = 'card-manacost';
-  nameRow.appendChild(nameEl);
-  nameRow.appendChild(manaEl);
-  el.appendChild(nameRow);
+  // Image — placeholder first, replace when loaded
+  const imgWrap = document.createElement('div');
+  const placeholder = document.createElement('div');
+  placeholder.className = 'card-img-placeholder';
+  placeholder.textContent = '🃏';
+  imgWrap.appendChild(placeholder);
+  el.appendChild(imgWrap);
 
-  const typeEl = document.createElement('div');
-  typeEl.className = 'card-type';
-  typeEl.textContent = '…';
-  el.appendChild(typeEl);
+  // Name strip below image
+  const nameStrip = document.createElement('div');
+  nameStrip.className = 'card-name-strip';
+  nameStrip.textContent = name;
+  el.appendChild(nameStrip);
 
-  const textEl = document.createElement('div');
-  textEl.className = 'card-text';
-  el.appendChild(textEl);
-
-  const ptEl = document.createElement('div');
-  ptEl.className = 'card-pt';
-  el.appendChild(ptEl);
-
-  if (isCommander(name)) {
-    const badge = document.createElement('span');
-    badge.className = 'card-badge badge-commander';
-    badge.textContent = '★ Commander';
-    el.appendChild(badge);
-  }
-
-  // Load card data async
+  // Load card data — get image + oracle data
   loadCardData(name, (data) => {
-    manaEl.textContent = formatMana(data.mana_cost);
-    typeEl.textContent = data.type_line;
-    textEl.textContent = data.oracle_text;
-    if (data.power) ptEl.textContent = `${data.power}/${data.toughness}`;
-    else if (data.loyalty) { ptEl.className = 'card-loyalty'; ptEl.textContent = `Loyalty: ${data.loyalty}`; }
-    else ptEl.textContent = '';
+    if (data.image) {
+      const img = document.createElement('img');
+      img.className = 'card-img';
+      img.src = data.image;
+      img.alt = name;
+      img.loading = 'lazy';
+      imgWrap.innerHTML = '';
+      imgWrap.appendChild(img);
+    }
   });
 
-  // Hover preview (full card image)
+  // Hover: show large preview
   el.addEventListener('mouseenter', (e) => showPreview(name, e));
   el.addEventListener('mousemove', (e) => posPreview(e));
   el.addEventListener('mouseleave', () => hidePreview());
@@ -868,8 +851,7 @@ function renderDone() {
   grid.className = 'cards-grid';
   state.pools[state.myIdx].forEach(name => {
     const el = buildCardEl(name);
-    el.style.cursor = 'default';
-    if (name === state.commander) el.style.outline = '2px solid var(--gold)';
+    if (name === state.commander) { el.style.outline = '3px solid var(--gold)'; el.style.outlineOffset = '2px'; }
     grid.appendChild(el);
   });
   main.appendChild(grid);
