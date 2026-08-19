@@ -245,6 +245,10 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
     <div class="field import-area" id="import-area" style="display:none">
       <label>Paste card list (one card per line)</label>
       <textarea id="cube-import" placeholder="Wrath of God&#10;Sol Ring&#10;Command Tower&#10;..."></textarea>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+        <span style="font-size:11px;color:var(--ink3)">or upload a .txt/.csv file:</span>
+        <input type="file" id="cube-file" accept=".txt,.csv,.dck" style="font-size:12px;color:var(--ink2);background:var(--surface2);border:1px solid var(--border2);border-radius:5px;padding:4px 8px;cursor:pointer;flex:1;">
+      </div>
     </div>
 
     <button class="btn-primary" id="start-btn">Start Draft →</button>
@@ -275,7 +279,7 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
     <div class="sidebar">
       <div class="sb-tabs">
         <button class="sb-tab active" data-pane="pool">My Pool</button>
-        <button class="sb-tab" data-pane="bots">Bot Picks</button>
+        <button class="sb-tab" data-pane="bots">Cards Seen</button>
         <button class="sb-tab" data-pane="rules">Rules</button>
       </div>
       <div class="sb-pane active" id="pane-pool"></div>
@@ -313,6 +317,16 @@ function toggleImport() {
   const src = document.getElementById('cube-source').value;
   document.getElementById('import-area').style.display = src === 'import' ? 'flex' : 'none';
 }
+
+document.getElementById('cube-file').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    document.getElementById('cube-import').value = ev.target.result;
+  };
+  reader.readAsText(file);
+});
 
 document.getElementById('start-btn').addEventListener('click', () => {
   const nPlayers = parseInt(document.getElementById('num-players').value);
@@ -359,6 +373,15 @@ function shuffle(arr) {
 }
 
 function isCommander(name) {
+  // If we have Scryfall data, use it authoritatively
+  const data = cardDataCache[name];
+  if (data) {
+    const typeLine = data.type_line || '';
+    const isLegendary = typeLine.includes('Legendary');
+    const isCreatureOrPW = typeLine.includes('Creature') || typeLine.includes('Planeswalker');
+    return isLegendary && isCreatureOrPW;
+  }
+  // Fallback to hardcoded set until data loads
   return window.CUBE_DATA.commanders.has(name);
 }
 
@@ -400,6 +423,7 @@ function startDraft(nPlayers, packSize, picksPerPick, cubeList) {
     myIdx: 0,          // human is always player 0
     commander: null,
     cubeList,
+    seenPacks: [],     // [{packOrigin, pickNum, cards: [name,...]}] — packs human has seen
   };
 
   document.getElementById('setup').style.display = 'none';
@@ -495,6 +519,13 @@ function advancePick(myPicks) {
 // ── RENDER DRAFT ───────────────────────────────────────────
 function renderDraft() {
   const pack = currentPack();
+  // Record this pack as seen by the human (if not already recorded this pick)
+  const seenKey = `${state.packNum}-${state.pickNum}`;
+  if (!state._seenKeys) state._seenKeys = new Set();
+  if (!state._seenKeys.has(seenKey)) {
+    state._seenKeys.add(seenKey);
+    state.seenPacks.push({ packNum: state.packNum, pickNum: state.pickNum, cards: [...pack] });
+  }
   document.getElementById('hdr-pack').textContent = state.packNum + 1;
   document.getElementById('hdr-pick').textContent = state.pickNum + 1;
   document.getElementById('hdr-pool').textContent = state.pools[state.myIdx].length;
@@ -553,7 +584,7 @@ function renderDraft() {
   });
 
   renderPool();
-  renderBotPicks();
+  renderSeenCards();
 }
 
 function onCardClick(name) {
@@ -729,6 +760,10 @@ function buildCardEl(name) {
       imgWrap.appendChild(img);
     }
     applyColorToCard(el, data);
+    // Re-evaluate commander status now that we have type data
+    const isCmd = isCommander(name);
+    if (isCmd) el.classList.add('commander-card');
+    else el.classList.remove('commander-card');
   });
 
   // Hover: show large preview
@@ -834,27 +869,82 @@ function makePoolCard(name, isCmd) {
 }
 
 // ── BOT PICKS SIDEBAR ──────────────────────────────────────
-let botPickLog = [];
-function renderBotPicks() {
+function renderSeenCards() {
   const el = document.getElementById('pane-bots');
-  if (botPickLog.length === 0) {
-    el.innerHTML = '<div class="pool-empty">Bot picks will appear here.</div>';
+  if (!state || !state.seenPacks || state.seenPacks.length === 0) {
+    el.innerHTML = '<div class="pool-empty">Cards from packs you\'ve seen will appear here — showing what was passed away.</div>';
     return;
   }
+
+  // Find the current pack's "lineage" — what cards the human originally saw
+  // that are now missing (passed to other players)
+  const myPool = new Set(state.pools[state.myIdx]);
+  const currentPackCards = new Set(currentPack());
+
+  // All cards the human has seen in this pack number (same packNum, all picks)
+  const seenThisPackNum = state.seenPacks.filter(p => p.packNum === state.packNum);
+
   el.innerHTML = '';
-  // show last 30 entries
-  const recent = botPickLog.slice(-30).reverse();
-  recent.forEach(entry => {
+
+  if (seenThisPackNum.length === 0) {
+    el.innerHTML = '<div class="pool-empty">No cards seen yet this pack.</div>';
+    return;
+  }
+
+  // Union of all cards seen in this pack (first time seen = pick 1 of this pack round)
+  const firstSeen = seenThisPackNum[0];
+  const allSeenThisPack = new Set(firstSeen.cards);
+
+  // Missing = seen originally but not in current pack AND not in my pool
+  const missing = [...allSeenThisPack].filter(c => !currentPackCards.has(c) && !myPool.has(c));
+  const inMyPool = [...allSeenThisPack].filter(c => myPool.has(c));
+
+  if (missing.length === 0 && inMyPool.length === 0) {
+    el.innerHTML = '<div class="pool-empty">No cards passed yet.</div>';
+    return;
+  }
+
+  const lbl = document.createElement('div');
+  lbl.className = 'pool-section-label';
+  lbl.textContent = `Pack ${state.packNum + 1} — ${missing.length} passed away`;
+  el.appendChild(lbl);
+
+  missing.forEach(name => {
     const row = document.createElement('div');
-    row.className = 'bot-row';
-    row.innerHTML = `<span class="bot-name">${entry.name}</span><span class="bot-pick">${entry.picks.join(', ')}</span>`;
+    row.className = 'pool-card';
+    row.style.opacity = '0.7';
+    const nameEl = document.createElement('div');
+    nameEl.className = 'pool-card-name';
+    nameEl.textContent = name;
+    const typeEl = document.createElement('div');
+    typeEl.className = 'pool-card-type';
+    typeEl.textContent = '—';
+    row.appendChild(nameEl);
+    row.appendChild(typeEl);
+    loadCardData(name, (data) => {
+      typeEl.textContent = data.type_line || '';
+      applyColorToPool(row, data);
+    });
+    row.addEventListener('mouseenter', (e) => showPreview(name, e));
+    row.addEventListener('mousemove', (e) => posPreview(e));
+    row.addEventListener('mouseleave', () => hidePreview());
     el.appendChild(row);
   });
-}
 
-// Wrap advancePick to log bot picks
-const _origAdvance = advancePick;
-// Already defined above; we'll hook bot logging into it directly
+  if (inMyPool.length) {
+    const lbl2 = document.createElement('div');
+    lbl2.className = 'pool-section-label';
+    lbl2.textContent = `Picked by you (${inMyPool.length})`;
+    el.appendChild(lbl2);
+    inMyPool.forEach(name => {
+      const row = document.createElement('div');
+      row.className = 'pool-card is-commander';
+      row.style.opacity = '0.5';
+      row.innerHTML = `<div class="pool-card-name" style="color:var(--gold)">✓ ${name}</div>`;
+      el.appendChild(row);
+    });
+  }
+}
 
 // ── COMMANDER CHOICE ───────────────────────────────────────
 function renderCommanderChoice() {
