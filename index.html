@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commander Cube Draft</title>
+<style>
+:root {
+  --bg:#1a1612;--surface:#242018;--surface2:#2e2820;--surface3:#38321e;
+  --border:#3a3420;--border2:#504828;
+  --ink:#f0e8d0;--ink2:#b0a070;--ink3:#706040;
+  --gold:#c8a040;--gold2:#a07828;
+  --blue:#4a90d8;--green:#3a9850;--red:#c04030;--purple:#8040b0;--white:#c0b890;
+  --radius:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;}
+
+/* ── SETUP ── */
+#setup{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+.setup-card{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:40px;width:100%;max-width:500px;}
+.setup-title{font-size:28px;font-weight:800;color:var(--gold);margin-bottom:4px;}
+.setup-sub{color:var(--ink3);font-size:13px;margin-bottom:30px;}
+.field{margin-bottom:18px;}
+.field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:7px;}
+.field select,.field input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;color:var(--ink);font-size:14px;padding:10px 13px;font-family:inherit;outline:none;}
+.field select:focus,.field input:focus{border-color:var(--gold);}
+.btn-primary{width:100%;background:var(--gold);color:#1a1208;border:none;border-radius:9px;font-size:15px;font-weight:800;padding:13px;cursor:pointer;font-family:inherit;margin-top:6px;transition:background .15s;}
+.btn-primary:hover{background:#d8b050;}
+.rules-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:12px;color:var(--ink3);line-height:1.7;margin-bottom:20px;}
+.rules-box b{color:var(--ink2);}
+
+/* ── GAME ── */
+#game{display:none;min-height:100vh;flex-direction:column;}
+#game.on{display:flex;}
+
+/* header */
+.hdr{display:flex;align-items:center;gap:0;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;height:50px;}
+.hdr-seg{padding:0 16px;border-right:1px solid var(--border);height:100%;display:flex;align-items:center;gap:8px;}
+.hdr-title{font-size:15px;font-weight:800;color:var(--gold);}
+.hdr-info{font-size:12px;color:var(--ink3);}
+.hdr-info strong{color:var(--ink);}
+.hdr-seg:last-child{border-right:none;margin-left:auto;}
+.btn{background:var(--surface2);border:1px solid var(--border2);color:var(--ink2);border-radius:6px;font-size:12px;padding:5px 12px;cursor:pointer;font-family:inherit;transition:all .15s;}
+.btn:hover{border-color:var(--gold);color:var(--gold);}
+.btn:disabled{opacity:.3;pointer-events:none;}
+
+/* body layout */
+.game-body{display:grid;grid-template-columns:1fr 300px;flex:1;overflow:hidden;min-height:0;}
+
+/* main area */
+.main{display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.main-inner{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:20px;}
+
+/* pack display */
+.pack-header{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;}
+.pack-title{font-size:18px;font-weight:800;color:var(--gold);}
+.pack-sub{font-size:13px;color:var(--ink3);}
+.pack-instruction{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--ink2);margin-bottom:14px;}
+.pack-instruction b{color:var(--gold);}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+
+/* card display */
+.card{
+  background:var(--surface);border:1px solid var(--border2);border-radius:8px;
+  padding:10px;cursor:pointer;transition:all .15s;position:relative;
+  display:flex;flex-direction:column;gap:4px;
+  min-height:80px;
+}
+.card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.4);}
+.card.selected{border-color:var(--gold);background:var(--surface3);box-shadow:0 0 0 2px var(--gold);}
+.card.selected2{border-color:#4a90d8;background:#1a2030;box-shadow:0 0 0 2px #4a90d8;}
+.card.commander-card{border-color:var(--gold2);}
+.card.commander-card::before{content:'★';position:absolute;top:4px;right:6px;font-size:10px;color:var(--gold);}
+.card-name{font-size:12px;font-weight:700;color:var(--ink);line-height:1.3;}
+.card-img{width:100%;border-radius:5px;display:block;aspect-ratio:5/7;object-fit:cover;background:var(--surface2);}
+.card-img-wrap{margin-bottom:6px;position:relative;}
+.card-img-placeholder{width:100%;aspect-ratio:5/7;background:var(--surface2);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--border2);}
+.card-badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:.04em;}
+.badge-commander{background:rgba(200,160,64,.25);color:var(--gold);}
+
+/* pool / sidebar */
+.sidebar{border-left:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.sb-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb-tab{flex:1;padding:9px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:var(--ink3);border:none;background:none;font-family:inherit;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid transparent;transition:all .15s;}
+.sb-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.sb-pane{display:none;flex:1;overflow-y:auto;padding:12px;}
+.sb-pane.active{display:block;}
+.pool-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin:10px 0 6px;padding-bottom:3px;border-bottom:1px solid var(--border);}
+.pool-card{
+  display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:5px;
+  cursor:pointer;transition:background .1s;
+  border:1px solid transparent;margin-bottom:3px;
+}
+.pool-card:hover{background:var(--surface2);}
+.pool-card.is-commander{border-color:rgba(200,160,64,.3);}
+.pool-card-name{font-size:12px;color:var(--ink);flex:1;}
+.pool-cmd-star{color:var(--gold);font-size:11px;}
+.pool-empty{font-size:12px;color:var(--ink3);font-style:italic;padding:8px 0;}
+
+/* bot picks display */
+.bot-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px;color:var(--ink3);}
+.bot-name{font-weight:600;color:var(--ink2);min-width:54px;}
+.bot-pick{color:var(--ink);}
+
+/* pick actions */
+.pick-actions{background:var(--surface);border-top:1px solid var(--border);padding:14px 20px;flex-shrink:0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.pick-btn{background:var(--gold);color:#1a1208;border:none;border-radius:7px;font-size:13px;font-weight:700;padding:9px 20px;cursor:pointer;font-family:inherit;transition:background .15s;}
+.pick-btn:hover{background:#d8b050;}
+.pick-btn:disabled{background:var(--surface2);color:var(--ink3);cursor:not-allowed;}
+.pick-info{font-size:12px;color:var(--ink3);}
+
+/* commander chooser */
+.cmd-chooser{background:var(--surface);border:1px solid var(--gold2);border-radius:10px;padding:20px;margin-bottom:16px;}
+.cmd-chooser-title{font-size:16px;font-weight:800;color:var(--gold);margin-bottom:4px;}
+.cmd-chooser-sub{font-size:12px;color:var(--ink3);margin-bottom:14px;}
+.cmd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;}
+.cmd-card{
+  background:var(--surface2);border:1px solid var(--border2);border-radius:7px;
+  padding:10px;cursor:pointer;transition:all .15s;text-align:center;
+}
+.cmd-card:hover{border-color:var(--gold);}
+.cmd-card.chosen{border-color:var(--gold);background:var(--surface3);box-shadow:0 0 0 2px var(--gold);}
+.cmd-card-name{font-size:11px;font-weight:700;color:var(--ink);line-height:1.3;}
+
+/* phase banners */
+.phase-banner{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:24px;text-align:center;}
+.phase-banner h2{font-size:22px;font-weight:800;color:var(--gold);margin-bottom:8px;}
+.phase-banner p{font-size:13px;color:var(--ink3);margin-bottom:16px;}
+.phase-banner .pool-summary{text-align:left;margin:16px 0;display:flex;flex-wrap:wrap;gap:6px;}
+.pool-tag{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:3px 9px;font-size:11px;color:var(--ink2);}
+.pool-tag.gold{border-color:var(--gold2);color:var(--gold);}
+
+/* card hover preview */
+#card-preview{
+  position:fixed;z-index:500;pointer-events:none;
+  width:220px;border-radius:10px;overflow:hidden;
+  box-shadow:0 8px 32px rgba(0,0,0,.6);
+  display:none;
+}
+#card-preview img{width:100%;display:block;}
+
+/* scryfall image fallback */
+.card-img-loaded{background:none;}
+
+/* toast */
+.toast-wrap{position:fixed;bottom:18px;right:18px;display:flex;flex-direction:column;gap:7px;z-index:300;}
+.toast{background:var(--surface2);border:1px solid var(--border2);border-radius:7px;padding:9px 14px;font-size:12px;color:var(--ink);max-width:260px;box-shadow:0 4px 12px rgba(0,0,0,.3);animation:sli .2s ease;}
+@keyframes sli{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* cube import */
+.import-area{display:flex;flex-direction:column;gap:8px;}
+.import-area textarea{width:100%;height:200px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;color:var(--ink);font-size:12px;padding:10px;font-family:monospace;outline:none;resize:vertical;}
+.import-area textarea:focus{border-color:var(--gold);}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setup">
+  <div class="setup-card">
+    <div class="setup-title">Commander Cube Draft</div>
+    <div class="setup-sub">Sam Black's cube · 817 cards · Commander Legends draft variant</div>
+
+    <div class="rules-box">
+      <b>Draft rules (Sam Black format):</b><br>
+      Draft <b>3 packs of 20 cards</b>, picking <b>2 cards per pick</b>. Build a <b>60-card deck</b> following Commander color identity rules. Your commander is drafted from packs — choose it after the draft. Each player gets one <b>Command Tower</b> added automatically. Mono-color commanders may splash a second color (up to 6 spells + lands).
+    </div>
+
+    <div class="field">
+      <label>Number of players</label>
+      <select id="num-players">
+        <option value="4" selected>4 players</option>
+        <option value="5">5 players</option>
+        <option value="6">6 players</option>
+        <option value="8">8 players</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Pack size</label>
+      <select id="pack-size">
+        <option value="20" selected>20 cards (Sam Black standard)</option>
+        <option value="15">15 cards (4 packs, 4-player)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Picks per pick</label>
+      <select id="picks-per-pick">
+        <option value="2" selected>2 cards per pick</option>
+        <option value="1">1 card per pick</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Cube list</label>
+      <select id="cube-source" onchange="toggleImport()">
+        <option value="builtin">Sam Black's Commander Cube (built-in)</option>
+        <option value="import">Import custom cube list</option>
+      </select>
+    </div>
+    <div class="field import-area" id="import-area" style="display:none">
+      <label>Paste card list (one card per line)</label>
+      <textarea id="cube-import" placeholder="Wrath of God&#10;Sol Ring&#10;Command Tower&#10;..."></textarea>
+    </div>
+
+    <button class="btn-primary" id="start-btn">Start Draft →</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game">
+  <div class="hdr">
+    <div class="hdr-seg"><span class="hdr-title">Commander Cube</span></div>
+    <div class="hdr-seg"><span class="hdr-info">Pack <strong id="hdr-pack">1</strong>/3</span></div>
+    <div class="hdr-seg"><span class="hdr-info">Pick <strong id="hdr-pick">1</strong></span></div>
+    <div class="hdr-seg"><span class="hdr-info">Cards in pool: <strong id="hdr-pool">0</strong></span></div>
+    <div class="hdr-seg">
+      <button class="btn" id="reset-btn">New draft</button>
+    </div>
+  </div>
+
+  <div class="game-body">
+    <div class="main">
+      <div class="main-inner" id="main-inner"></div>
+      <div class="pick-actions" id="pick-actions" style="display:none">
+        <button class="pick-btn" id="confirm-pick" disabled>Confirm pick →</button>
+        <span class="pick-info" id="pick-info"></span>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sb-tabs">
+        <button class="sb-tab active" data-pane="pool">My Pool</button>
+        <button class="sb-tab" data-pane="bots">Bot Picks</button>
+        <button class="sb-tab" data-pane="rules">Rules</button>
+      </div>
+      <div class="sb-pane active" id="pane-pool"></div>
+      <div class="sb-pane" id="pane-bots"></div>
+      <div class="sb-pane" id="pane-rules">
+        <div style="font-size:12px;color:var(--ink3);line-height:1.8">
+          <p style="color:var(--gold);font-weight:700;margin-bottom:8px">Sam Black's Commander Cube Rules</p>
+          <p><b style="color:var(--ink2)">Draft:</b> 3 packs of 20 cards, pick 2 per pick. All players draft simultaneously in a pod.</p><br>
+          <p><b style="color:var(--ink2)">Packs pass:</b> left for pack 1, right for pack 2, left for pack 3.</p><br>
+          <p><b style="color:var(--ink2)">Deck:</b> 60 cards, following Commander color identity rules. Commander is not included in the 60.</p><br>
+          <p><b style="color:var(--ink2)">Commander:</b> Drafted from packs as normal cards. Choose one after the draft. ★ cards are legendary and can be commanders.</p><br>
+          <p><b style="color:var(--ink2)">Command Tower:</b> Every player gets one free Command Tower added to their pool after the draft.</p><br>
+          <p><b style="color:var(--ink2)">Mono-color splash:</b> If your commander is mono-color, you may choose a second color and include up to 6 spells of that color plus any lands for it.</p><br>
+          <p><b style="color:var(--ink2)">Play:</b> 4-player free-for-all. All normal Commander rules apply except deck is 60 cards.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- card hover preview -->
+<div id="card-preview"><img id="preview-img" src="" alt=""></div>
+<div class="toast-wrap" id="toasts"></div>
+
+<script src="cube.js"></script>
+<script>
+// ── STATE ──────────────────────────────────────────────────
+const SCRYFALL_BASE = 'https://api.scryfall.com/cards/named?fuzzy=';
+const imgCache = {};
+
+let state = null;
+
+// ── SETUP ──────────────────────────────────────────────────
+function toggleImport() {
+  const src = document.getElementById('cube-source').value;
+  document.getElementById('import-area').style.display = src === 'import' ? 'flex' : 'none';
+}
+
+document.getElementById('start-btn').addEventListener('click', () => {
+  const nPlayers = parseInt(document.getElementById('num-players').value);
+  const packSize = parseInt(document.getElementById('pack-size').value);
+  const picksPerPick = parseInt(document.getElementById('picks-per-pick').value);
+  const src = document.getElementById('cube-source').value;
+
+  let cubeList;
+  if (src === 'import') {
+    const raw = document.getElementById('cube-import').value;
+    cubeList = raw.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+    if (cubeList.length < packSize * 3 * nPlayers) {
+      toast(`Need at least ${packSize * 3 * nPlayers} cards for this setup (have ${cubeList.length})`, true);
+      return;
+    }
+  } else {
+    cubeList = [...window.CUBE_DATA.cards];
+  }
+
+  startDraft(nPlayers, packSize, picksPerPick, cubeList);
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  document.getElementById('game').classList.remove('on');
+  document.getElementById('setup').style.display = 'flex';
+});
+
+document.querySelectorAll('.sb-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.sb-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.sb-pane').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('pane-' + tab.dataset.pane).classList.add('active');
+  });
+});
+
+// ── DRAFT ENGINE ───────────────────────────────────────────
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function isCommander(name) {
+  return window.CUBE_DATA.commanders.has(name);
+}
+
+function startDraft(nPlayers, packSize, picksPerPick, cubeList) {
+  // shuffle cube
+  const deck = shuffle([...cubeList]);
+
+  // deal packs: 3 packs per player
+  const totalPacks = nPlayers * 3;
+  const needed = totalPacks * packSize;
+  if (deck.length < needed) {
+    // repeat cards if needed (shouldn't happen with 800+ card cube)
+    while (deck.length < needed) deck.push(...shuffle([...cubeList]));
+  }
+
+  // build packs[playerIdx][packNum] = [cardNames]
+  const packs = Array.from({length: nPlayers}, () => Array.from({length: 3}, () => []));
+  let idx = 0;
+  for (let p = 0; p < 3; p++) {
+    for (let pl = 0; pl < nPlayers; pl++) {
+      packs[pl][p] = deck.slice(idx, idx + packSize);
+      idx += packSize;
+    }
+  }
+
+  // Bot names
+  const botNames = ['Alex', 'Blake', 'Casey', 'Dana', 'Emery', 'Finley', 'Gray', 'Harley'];
+
+  state = {
+    nPlayers, packSize, picksPerPick,
+    packs,             // packs[player][packNum] = remaining cards
+    pools: Array.from({length: nPlayers}, () => []),  // drafted cards
+    packNum: 0,        // 0,1,2
+    pickNum: 0,        // pick within pack
+    phase: 'draft',    // draft | choose-commander | done
+    sel1: null,        // first selected card name (pick 1)
+    sel2: null,        // second selected card name (if picksPerPick===2)
+    botNames: botNames.slice(0, nPlayers - 1),
+    myIdx: 0,          // human is always player 0
+    commander: null,
+    cubeList,
+  };
+
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('game').classList.add('on');
+  renderDraft();
+}
+
+function currentPack() {
+  // packs are passed around the table
+  // pack 1: pass left (i+1)%n, pack 2: pass right (i-1+n)%n, pack 3: pass left
+  // at pick k within pack p, player i has the pack that started with player:
+  // pack 0: ((i - pickNum) + n*100) % n
+  // pack 1: ((i + pickNum) + n*100) % n
+  // pack 2: ((i - pickNum) + n*100) % n
+  const n = state.nPlayers;
+  const dir = state.packNum % 2 === 0 ? -1 : 1; // pack 1,3: left; pack 2: right
+  const originPlayer = ((state.myIdx + dir * state.pickNum) % n + n) % n;
+  return state.packs[originPlayer][state.packNum];
+}
+
+function packForPlayer(playerIdx) {
+  const n = state.nPlayers;
+  const dir = state.packNum % 2 === 0 ? -1 : 1;
+  const originPlayer = ((playerIdx + dir * state.pickNum) % n + n) % n;
+  return state.packs[originPlayer][state.packNum];
+}
+
+// Bot strategy: prefer commanders if pool has < 2, else random weighted by commander preference
+function botPick(playerIdx, pack) {
+  const pool = state.pools[playerIdx];
+  const cmdCount = pool.filter(c => isCommander(c)).length;
+  const picks = [];
+  let remaining = [...pack];
+
+  for (let p = 0; p < state.picksPerPick && remaining.length > 0; p++) {
+    // Score each card
+    let best = null, bestScore = -1;
+    for (const card of remaining) {
+      let score = Math.random();
+      if (isCommander(card) && cmdCount < 2) score += 2;
+      else if (isCommander(card)) score += 0.5;
+      if (score > bestScore) { bestScore = score; best = card; }
+    }
+    picks.push(best);
+    remaining = remaining.filter(c => c !== best);
+  }
+  return picks;
+}
+
+function advancePick(myPicks) {
+  const n = state.nPlayers;
+  // record human picks
+  myPicks.forEach(c => state.pools[state.myIdx].push(c));
+
+  // bots pick from their respective packs
+  for (let pl = 1; pl < n; pl++) {
+    const pack = packForPlayer(pl);
+    const picks = botPick(pl, pack);
+    picks.forEach(c => {
+      state.pools[pl].push(c);
+      const idx = pack.indexOf(c);
+      if (idx > -1) pack.splice(idx, 1);
+    });
+  }
+
+  // remove human picks from their pack
+  const myPack = currentPack();
+  myPicks.forEach(c => {
+    const idx = myPack.indexOf(c);
+    if (idx > -1) myPack.splice(idx, 1);
+  });
+
+  state.sel1 = null;
+  state.sel2 = null;
+  state.pickNum++;
+
+  // check if pack is exhausted
+  const packsExhausted = state.packs.every((_, pl) => packForPlayer(pl).length === 0);
+  if (packsExhausted || currentPack().length === 0) {
+    state.packNum++;
+    state.pickNum = 0;
+    if (state.packNum >= 3) {
+      // draft done
+      state.phase = 'choose-commander';
+      renderCommanderChoice();
+      return;
+    }
+  }
+
+  renderDraft();
+}
+
+// ── RENDER DRAFT ───────────────────────────────────────────
+function renderDraft() {
+  const pack = currentPack();
+  document.getElementById('hdr-pack').textContent = state.packNum + 1;
+  document.getElementById('hdr-pick').textContent = state.pickNum + 1;
+  document.getElementById('hdr-pool').textContent = state.pools[state.myIdx].length;
+
+  const main = document.getElementById('main-inner');
+  main.innerHTML = '';
+
+  // Pack header
+  const hdr = document.createElement('div');
+  hdr.className = 'pack-header';
+  hdr.innerHTML = `<span class="pack-title">Pack ${state.packNum + 1}, Pick ${state.pickNum + 1}</span>
+    <span class="pack-sub">${pack.length} cards remaining</span>`;
+  main.appendChild(hdr);
+
+  // Instruction
+  const instr = document.createElement('div');
+  instr.className = 'pack-instruction';
+  const needed = state.picksPerPick === 2 ? 'two cards' : 'one card';
+  instr.innerHTML = `Select <b>${needed}</b> from this pack. <b>★</b> cards are legendary and can become your commander.
+    ${state.picksPerPick === 2 ? ' Click a second card after your first.' : ''}`;
+  main.appendChild(instr);
+
+  // Cards grid
+  const grid = document.createElement('div');
+  grid.className = 'cards-grid';
+
+  for (const cardName of pack) {
+    const card = buildCardEl(cardName, false);
+    card.addEventListener('click', () => onCardClick(cardName));
+    grid.appendChild(card);
+  }
+  main.appendChild(grid);
+
+  // Pick actions
+  const actions = document.getElementById('pick-actions');
+  actions.style.display = 'flex';
+  const btn = document.getElementById('confirm-pick');
+  const info = document.getElementById('pick-info');
+
+  const updateActions = () => {
+    const picksNeeded = Math.min(state.picksPerPick, currentPack().length);
+    const picksChosen = [state.sel1, state.sel2].filter(Boolean).length;
+    btn.disabled = picksChosen < picksNeeded;
+    if (picksNeeded === 1) info.textContent = state.sel1 ? `Selected: ${state.sel1}` : 'Select 1 card';
+    else info.textContent = `Selected ${picksChosen}/2: ${[state.sel1, state.sel2].filter(Boolean).join(', ')}`;
+  };
+  updateActions();
+  btn.onclick = () => {
+    const picks = [state.sel1, state.sel2].filter(Boolean);
+    advancePick(picks);
+  };
+
+  // re-bind card clicks to update actions
+  grid.querySelectorAll('.card').forEach(el => {
+    el.addEventListener('click', updateActions);
+  });
+
+  renderPool();
+  renderBotPicks();
+}
+
+function onCardClick(name) {
+  if (state.sel1 === name) {
+    state.sel1 = null;
+  } else if (state.sel2 === name) {
+    state.sel2 = null;
+  } else if (!state.sel1) {
+    state.sel1 = name;
+  } else if (state.picksPerPick === 2 && !state.sel2 && state.sel1 !== name) {
+    state.sel2 = name;
+  } else if (state.picksPerPick === 1) {
+    state.sel1 = name; // replace
+  }
+  // refresh card highlight states
+  document.querySelectorAll('.card').forEach(el => {
+    const n = el.dataset.name;
+    el.classList.remove('selected', 'selected2');
+    if (n === state.sel1) el.classList.add('selected');
+    else if (n === state.sel2) el.classList.add('selected2');
+  });
+  // update pick info
+  const picksNeeded = Math.min(state.picksPerPick, currentPack().length);
+  const picksChosen = [state.sel1, state.sel2].filter(Boolean).length;
+  document.getElementById('confirm-pick').disabled = picksChosen < picksNeeded;
+  if (picksNeeded === 1) document.getElementById('pick-info').textContent = state.sel1 ? `Selected: ${state.sel1}` : 'Select 1 card';
+  else document.getElementById('pick-info').textContent = `Selected ${picksChosen}/2: ${[state.sel1, state.sel2].filter(Boolean).join(', ')}`;
+}
+
+// ── CARD ELEMENT ───────────────────────────────────────────
+function buildCardEl(name, small = false) {
+  const el = document.createElement('div');
+  el.className = 'card' + (isCommander(name) ? ' commander-card' : '');
+  if (name === state.sel1) el.classList.add('selected');
+  if (name === state.sel2) el.classList.add('selected2');
+  el.dataset.name = name;
+
+  // Image area
+  const imgWrap = document.createElement('div');
+  imgWrap.className = 'card-img-wrap';
+  const placeholder = document.createElement('div');
+  placeholder.className = 'card-img-placeholder';
+  placeholder.textContent = '🃏';
+  imgWrap.appendChild(placeholder);
+
+  // Lazy load scryfall image
+  if (imgCache[name]) {
+    const img = document.createElement('img');
+    img.className = 'card-img';
+    img.src = imgCache[name];
+    imgWrap.innerHTML = '';
+    imgWrap.appendChild(img);
+  } else {
+    // Load async
+    loadCardImage(name, (url) => {
+      imgCache[name] = url;
+      const existing = document.querySelectorAll(`.card[data-name="${CSS.escape(name)}"] .card-img-placeholder`);
+      existing.forEach(ph => {
+        const img = document.createElement('img');
+        img.className = 'card-img';
+        img.src = url;
+        ph.replaceWith(img);
+      });
+    });
+  }
+
+  el.appendChild(imgWrap);
+
+  const nameEl = document.createElement('div');
+  nameEl.className = 'card-name';
+  nameEl.textContent = name;
+  el.appendChild(nameEl);
+
+  if (isCommander(name)) {
+    const badge = document.createElement('span');
+    badge.className = 'card-badge badge-commander';
+    badge.textContent = '★ Commander';
+    el.appendChild(badge);
+  }
+
+  // Hover preview
+  el.addEventListener('mouseenter', (e) => showPreview(name, e));
+  el.addEventListener('mousemove', (e) => posPreview(e));
+  el.addEventListener('mouseleave', () => hidePreview());
+
+  return el;
+}
+
+const imageLoadQueue = {};
+function loadCardImage(name, cb) {
+  if (imageLoadQueue[name]) { imageLoadQueue[name].push(cb); return; }
+  imageLoadQueue[name] = [cb];
+  const url = SCRYFALL_BASE + encodeURIComponent(name) + '&format=image&version=art_crop';
+  const img = new Image();
+  img.onload = () => { (imageLoadQueue[name] || []).forEach(fn => fn(url)); delete imageLoadQueue[name]; };
+  img.onerror = () => {
+    const fallback = 'https://via.placeholder.com/223x310/242018/c8a040?text=' + encodeURIComponent(name.substring(0, 20));
+    (imageLoadQueue[name] || []).forEach(fn => fn(fallback));
+    delete imageLoadQueue[name];
+  };
+  img.src = url;
+}
+
+function showPreview(name, e) {
+  const prev = document.getElementById('card-preview');
+  const img = document.getElementById('preview-img');
+  const url = imgCache[name] || (SCRYFALL_BASE + encodeURIComponent(name) + '&format=image');
+  img.src = url;
+  prev.style.display = 'block';
+  posPreview(e);
+}
+function posPreview(e) {
+  const prev = document.getElementById('card-preview');
+  let x = e.clientX + 16, y = e.clientY + 16;
+  if (x + 220 > window.innerWidth) x = e.clientX - 236;
+  if (y + 310 > window.innerHeight) y = e.clientY - 326;
+  prev.style.left = x + 'px';
+  prev.style.top = y + 'px';
+}
+function hidePreview() { document.getElementById('card-preview').style.display = 'none'; }
+
+// ── POOL SIDEBAR ───────────────────────────────────────────
+function renderPool() {
+  const el = document.getElementById('pane-pool');
+  const pool = state.pools[state.myIdx];
+  if (pool.length === 0) {
+    el.innerHTML = '<div class="pool-empty">No cards yet — make your first pick!</div>';
+    return;
+  }
+  const cmds = pool.filter(c => isCommander(c));
+  const nonCmds = pool.filter(c => !isCommander(c));
+  el.innerHTML = '';
+
+  if (cmds.length) {
+    const lbl = document.createElement('div');
+    lbl.className = 'pool-section-label';
+    lbl.textContent = `Potential Commanders (${cmds.length})`;
+    el.appendChild(lbl);
+    cmds.forEach(name => el.appendChild(makePoolCard(name, true)));
+  }
+
+  const lbl2 = document.createElement('div');
+  lbl2.className = 'pool-section-label';
+  lbl2.textContent = `Spells & Support (${nonCmds.length})`;
+  el.appendChild(lbl2);
+  nonCmds.forEach(name => el.appendChild(makePoolCard(name, false)));
+}
+
+function makePoolCard(name, isCmd) {
+  const el = document.createElement('div');
+  el.className = 'pool-card' + (isCmd ? ' is-commander' : '');
+  el.innerHTML = `${isCmd ? '<span class="pool-cmd-star">★</span>' : ''}<span class="pool-card-name">${name}</span>`;
+  el.addEventListener('mouseenter', (e) => showPreview(name, e));
+  el.addEventListener('mousemove', (e) => posPreview(e));
+  el.addEventListener('mouseleave', () => hidePreview());
+  return el;
+}
+
+// ── BOT PICKS SIDEBAR ──────────────────────────────────────
+let botPickLog = [];
+function renderBotPicks() {
+  const el = document.getElementById('pane-bots');
+  if (botPickLog.length === 0) {
+    el.innerHTML = '<div class="pool-empty">Bot picks will appear here.</div>';
+    return;
+  }
+  el.innerHTML = '';
+  // show last 30 entries
+  const recent = botPickLog.slice(-30).reverse();
+  recent.forEach(entry => {
+    const row = document.createElement('div');
+    row.className = 'bot-row';
+    row.innerHTML = `<span class="bot-name">${entry.name}</span><span class="bot-pick">${entry.picks.join(', ')}</span>`;
+    el.appendChild(row);
+  });
+}
+
+// Wrap advancePick to log bot picks
+const _origAdvance = advancePick;
+// Already defined above; we'll hook bot logging into it directly
+
+// ── COMMANDER CHOICE ───────────────────────────────────────
+function renderCommanderChoice() {
+  document.getElementById('pick-actions').style.display = 'none';
+  const main = document.getElementById('main-inner');
+  main.innerHTML = '';
+
+  const pool = state.pools[state.myIdx];
+  const cmdOptions = pool.filter(c => isCommander(c));
+
+  const box = document.createElement('div');
+  box.className = 'cmd-chooser';
+  box.innerHTML = `<div class="cmd-chooser-title">Choose Your Commander</div>
+    <div class="cmd-chooser-sub">Select one of your drafted legendary permanents as your commander. It won't count toward your 60-card deck. You'll also receive a free Command Tower.</div>`;
+
+  if (cmdOptions.length === 0) {
+    box.innerHTML += '<div class="pool-empty" style="color:var(--red)">You didn\'t draft any legendary permanents! You may still build a deck but you\'ll need to treat a non-legendary card as your commander (house rule).</div>';
+    const btn = document.createElement('button');
+    btn.className = 'pick-btn';
+    btn.textContent = 'Continue without commander →';
+    btn.style.marginTop = '12px';
+    btn.onclick = () => finalizeDraft(null);
+    box.appendChild(btn);
+  } else {
+    const grid = document.createElement('div');
+    grid.className = 'cmd-grid';
+    let chosenCmd = null;
+    cmdOptions.forEach(name => {
+      const card = document.createElement('div');
+      card.className = 'cmd-card';
+      card.dataset.name = name;
+      card.innerHTML = `<div class="cmd-card-name">${name}</div>`;
+      card.addEventListener('mouseenter', (e) => showPreview(name, e));
+      card.addEventListener('mousemove', (e) => posPreview(e));
+      card.addEventListener('mouseleave', () => hidePreview());
+      card.addEventListener('click', () => {
+        chosenCmd = name;
+        grid.querySelectorAll('.cmd-card').forEach(c => c.classList.remove('chosen'));
+        card.classList.add('chosen');
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = `Confirm ${name} as commander →`;
+      });
+      grid.appendChild(card);
+    });
+    box.appendChild(grid);
+
+    const confirmBtn = document.createElement('button');
+    confirmBtn.className = 'pick-btn';
+    confirmBtn.style.marginTop = '16px';
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Choose a commander above';
+    confirmBtn.onclick = () => finalizeDraft(chosenCmd);
+    box.appendChild(confirmBtn);
+  }
+
+  main.appendChild(box);
+  renderPool();
+}
+
+function finalizeDraft(commander) {
+  state.commander = commander;
+  // add Command Tower
+  state.pools[state.myIdx].push('Command Tower');
+  state.phase = 'done';
+  renderDone();
+}
+
+// ── DONE SCREEN ────────────────────────────────────────────
+function renderDone() {
+  document.getElementById('hdr-pack').textContent = '—';
+  document.getElementById('hdr-pick').textContent = '—';
+  document.getElementById('hdr-pool').textContent = state.pools[state.myIdx].length;
+  document.getElementById('pick-actions').style.display = 'none';
+
+  const main = document.getElementById('main-inner');
+  main.innerHTML = '';
+
+  const pool = state.pools[state.myIdx].filter(c => c !== state.commander);
+  const cmdrs = pool.filter(c => isCommander(c));
+  const nonCmdrs = pool.filter(c => !isCommander(c));
+
+  const banner = document.createElement('div');
+  banner.className = 'phase-banner';
+  banner.innerHTML = `
+    <h2>Draft Complete! 🎉</h2>
+    <p>You drafted <strong>${state.pools[state.myIdx].length} cards</strong> (including Command Tower). Build your 60-card deck following Commander color identity rules.</p>
+    ${state.commander ? `<p style="color:var(--gold);font-weight:700;margin-top:8px">Commander: ${state.commander}</p>` : ''}
+    <div class="pool-summary">
+      <span class="pool-tag gold">Commander: ${state.commander || 'None'}</span>
+      <span class="pool-tag">Total pool: ${state.pools[state.myIdx].length}</span>
+      <span class="pool-tag">Legendaries: ${cmdrs.length}</span>
+    </div>
+    <button class="pick-btn" onclick="exportPool()" style="margin-top:8px">Export pool as text</button>
+  `;
+  main.appendChild(banner);
+
+  // Full pool display
+  const poolTitle = document.createElement('div');
+  poolTitle.style.cssText = 'font-size:16px;font-weight:800;color:var(--gold);margin:8px 0 12px';
+  poolTitle.textContent = 'Your Drafted Pool';
+  main.appendChild(poolTitle);
+
+  const grid = document.createElement('div');
+  grid.className = 'cards-grid';
+  state.pools[state.myIdx].forEach(name => {
+    const el = buildCardEl(name, true);
+    el.style.cursor = 'default';
+    if (name === state.commander) el.style.outline = '2px solid var(--gold)';
+    grid.appendChild(el);
+  });
+  main.appendChild(grid);
+
+  renderPool();
+}
+
+function exportPool() {
+  const pool = state.pools[state.myIdx];
+  const lines = [];
+  if (state.commander) lines.push(`// Commander\n1 ${state.commander}\n`);
+  lines.push('// Deck pool');
+  pool.filter(c => c !== state.commander).forEach(c => lines.push(`1 ${c}`));
+  const text = lines.join('\n');
+  navigator.clipboard.writeText(text).then(() => toast('Pool copied to clipboard!')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    toast('Pool copied to clipboard!');
+  });
+}
+
+// ── UTILS ──────────────────────────────────────────────────
+function toast(msg, err = false) {
+  const c = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast' + (err ? ' err' : '');
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+</script>
+</body>
+</html>
