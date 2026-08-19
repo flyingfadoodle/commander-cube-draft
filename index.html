@@ -197,6 +197,54 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
 /* pool color dot */
 .pool-color-pips{display:flex;gap:2px;margin-top:2px;}
 .pool-pip{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,.4);}
+
+/* ── CUBE VIEWER ── */
+#cube-viewer{display:none;min-height:100vh;flex-direction:column;}
+#cube-viewer.on{display:flex;}
+.cv-header{
+  display:flex;align-items:center;gap:12px;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:10px 20px;flex-shrink:0;flex-wrap:wrap;
+}
+.cv-title{font-size:15px;font-weight:800;color:var(--gold);margin-right:8px;}
+.cv-filter-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex:1;}
+.cv-filter-btn{
+  padding:5px 12px;border-radius:999px;border:1px solid var(--border2);
+  font-size:12px;cursor:pointer;user-select:none;
+  background:var(--surface2);color:var(--ink2);
+  transition:all .15s;font-family:inherit;
+}
+.cv-filter-btn:hover{border-color:var(--gold);color:var(--gold);}
+.cv-filter-btn.active{background:var(--gold);color:#1a1208;border-color:var(--gold);font-weight:700;}
+.cv-filter-btn.color-W.active{background:#d4c870;border-color:#d4c870;color:#1a1208;}
+.cv-filter-btn.color-U.active{background:#3a78c0;border-color:#3a78c0;color:#fff;}
+.cv-filter-btn.color-B.active{background:#6040a0;border-color:#6040a0;color:#fff;}
+.cv-filter-btn.color-R.active{background:#c03820;border-color:#c03820;color:#fff;}
+.cv-filter-btn.color-G.active{background:#208840;border-color:#208840;color:#fff;}
+.cv-filter-btn.color-M.active{background:var(--gold);border-color:var(--gold);color:#1a1208;}
+.cv-filter-btn.color-C.active{background:#888078;border-color:#888078;color:#fff;}
+.cv-count{font-size:11px;color:var(--ink3);white-space:nowrap;}
+.cv-sort{background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--ink);font-size:12px;padding:5px 10px;font-family:inherit;outline:none;cursor:pointer;}
+.cv-search{background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--ink);font-size:12px;padding:5px 10px;font-family:inherit;outline:none;width:160px;}
+.cv-search:focus{border-color:var(--gold);}
+.cv-grid{
+  display:flex;flex-wrap:wrap;gap:8px;
+  padding:16px 20px;overflow-y:auto;flex:1;
+  align-content:flex-start;
+}
+.cv-card{
+  width:130px;border-radius:8px;
+  border:2px solid transparent;cursor:pointer;
+  transition:all .12s;position:relative;
+  background:var(--surface2);overflow:hidden;
+  flex-shrink:0;
+}
+.cv-card:hover{border-color:var(--gold);transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,.5);}
+.cv-card img{width:100%;display:block;aspect-ratio:5/7;object-fit:cover;background:var(--surface3);}
+.cv-card-placeholder{width:100%;aspect-ratio:5/7;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--border2);}
+.cv-card-name{font-size:9px;font-weight:700;color:var(--ink);padding:3px 5px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cv-card.commander-card::after{content:'★';position:absolute;top:5px;right:6px;font-size:12px;color:var(--gold);text-shadow:0 1px 3px rgba(0,0,0,.9);pointer-events:none;}
+.cv-loading{padding:40px;text-align:center;color:var(--ink3);font-size:14px;}
 </style>
 </head>
 <body>
@@ -252,6 +300,7 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
     </div>
 
     <button class="btn-primary" id="start-btn">Start Draft →</button>
+    <button class="btn-primary" id="browse-cube-btn" style="margin-top:8px;background:var(--surface2);color:var(--gold);border:1px solid var(--gold);">🃏 Browse cube</button>
   </div>
 </div>
 
@@ -263,6 +312,7 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
     <div class="hdr-seg"><span class="hdr-info">Pick <strong id="hdr-pick">1</strong></span></div>
     <div class="hdr-seg"><span class="hdr-info">Cards in pool: <strong id="hdr-pool">0</strong></span></div>
     <div class="hdr-seg">
+      <button class="btn" id="view-cube-btn">🃏 View cube</button>
       <button class="btn" id="reset-btn">New draft</button>
     </div>
   </div>
@@ -297,6 +347,35 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- CUBE VIEWER -->
+<div id="cube-viewer">
+  <div class="cv-header">
+    <span class="cv-title">Cube Browser</span>
+    <input class="cv-search" id="cv-search" type="text" placeholder="Search cards…">
+    <div class="cv-filter-row" id="cv-filters">
+      <button class="cv-filter-btn active" data-color="all">All</button>
+      <button class="cv-filter-btn color-W" data-color="W">White</button>
+      <button class="cv-filter-btn color-U" data-color="U">Blue</button>
+      <button class="cv-filter-btn color-B" data-color="B">Black</button>
+      <button class="cv-filter-btn color-R" data-color="R">Red</button>
+      <button class="cv-filter-btn color-G" data-color="G">Green</button>
+      <button class="cv-filter-btn color-M" data-color="M">Multi</button>
+      <button class="cv-filter-btn color-C" data-color="C">Colorless</button>
+    </div>
+    <select class="cv-sort" id="cv-sort">
+      <option value="name">Sort: Name</option>
+      <option value="color">Sort: Color</option>
+      <option value="cmc">Sort: Mana Value</option>
+      <option value="type">Sort: Type</option>
+    </select>
+    <span class="cv-count" id="cv-count"></span>
+    <button class="btn" id="cv-back-btn">← Back to draft</button>
+  </div>
+  <div class="cv-grid" id="cv-grid">
+    <div class="cv-loading">Loading cube… images will appear as they load.</div>
   </div>
 </div>
 
@@ -1074,6 +1153,165 @@ function exportPool() {
     document.execCommand('copy');
     ta.remove();
     toast('Pool copied to clipboard!');
+  });
+}
+
+
+// ── CUBE VIEWER ───────────────────────────────────────────
+let cvFilter = 'all';
+let cvSort = 'name';
+let cvSearch = '';
+let cvColorCache = {}; // name -> color array (cached from Scryfall)
+
+function openCubeViewer(fromGame = false) {
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('game').classList.remove('on');
+  document.getElementById('cube-viewer').classList.add('on');
+  document.getElementById('cv-back-btn').dataset.fromGame = fromGame ? '1' : '0';
+  renderCubeViewer();
+}
+
+document.getElementById('cv-back-btn').addEventListener('click', () => {
+  document.getElementById('cube-viewer').classList.remove('on');
+  const fromGame = document.getElementById('cv-back-btn').dataset.fromGame === '1';
+  if (fromGame && state) {
+    document.getElementById('game').classList.add('on');
+  } else {
+    document.getElementById('setup').style.display = 'flex';
+  }
+});
+
+document.getElementById('view-cube-btn').addEventListener('click', () => openCubeViewer(true));
+document.getElementById('browse-cube-btn').addEventListener('click', () => openCubeViewer(false));
+
+document.getElementById('cv-search').addEventListener('input', (e) => {
+  cvSearch = e.target.value.toLowerCase();
+  renderCubeViewer();
+});
+
+document.getElementById('cv-sort').addEventListener('change', (e) => {
+  cvSort = e.target.value;
+  renderCubeViewer();
+});
+
+document.querySelectorAll('.cv-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    cvFilter = btn.dataset.color;
+    document.querySelectorAll('.cv-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderCubeViewer();
+  });
+});
+
+const COLOR_ORDER = ['W','U','B','R','G'];
+
+function cvGetColors(name) {
+  if (cvColorCache[name]) return cvColorCache[name];
+  const data = cardDataCache[name];
+  if (data) {
+    const colors = getColors(data);
+    cvColorCache[name] = colors;
+    return colors;
+  }
+  return null; // not loaded yet
+}
+
+function cvColorGroup(colors) {
+  if (!colors || colors.length === 0) return 'C';
+  if (colors.length >= 2) return 'M';
+  return colors[0];
+}
+
+function cvSortKey(name) {
+  const data = cardDataCache[name];
+  if (cvSort === 'name') return name;
+  if (cvSort === 'color') {
+    const colors = cvGetColors(name) || [];
+    const g = cvColorGroup(colors);
+    const order = {W:0,U:1,B:2,R:3,G:4,M:5,C:6};
+    return (order[g] ?? 7).toString().padStart(2,'0') + name;
+  }
+  if (cvSort === 'cmc') {
+    const cmc = data?.cmc ?? 99;
+    return cmc.toString().padStart(3,'0') + name;
+  }
+  if (cvSort === 'type') {
+    const t = data?.type_line || 'ZZZ';
+    return t + name;
+  }
+  return name;
+}
+
+function renderCubeViewer() {
+  const cubeList = (state?.cubeList) || window.CUBE_DATA.cards;
+  const grid = document.getElementById('cv-grid');
+
+  // Filter
+  let filtered = cubeList.filter(name => {
+    if (cvSearch && !name.toLowerCase().includes(cvSearch)) return false;
+    if (cvFilter === 'all') return true;
+    const colors = cvGetColors(name);
+    if (colors === null) return true; // show unloaded cards
+    const group = cvColorGroup(colors);
+    return group === cvFilter;
+  });
+
+  // Sort
+  filtered = filtered.slice().sort((a, b) => {
+    const ka = cvSortKey(a), kb = cvSortKey(b);
+    return ka < kb ? -1 : ka > kb ? 1 : 0;
+  });
+
+  document.getElementById('cv-count').textContent = `${filtered.length} cards`;
+
+  grid.innerHTML = '';
+
+  filtered.forEach(name => {
+    const card = document.createElement('div');
+    card.className = 'cv-card';
+    card.dataset.name = name;
+
+    const placeholder = document.createElement('div');
+    placeholder.className = 'cv-card-placeholder';
+    placeholder.textContent = '🃏';
+    card.appendChild(placeholder);
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'cv-card-name';
+    nameEl.textContent = name;
+    card.appendChild(nameEl);
+
+    // Load image
+    loadCardData(name, (data) => {
+      cvColorCache[name] = getColors(data);
+      // Update commander star
+      const isCmd = isCommander(name);
+      if (isCmd) card.classList.add('commander-card');
+
+      if (data.image) {
+        const img = document.createElement('img');
+        img.src = data.image;
+        img.alt = name;
+        img.loading = 'lazy';
+        const ph = card.querySelector('.cv-card-placeholder');
+        if (ph) ph.replaceWith(img);
+      }
+
+      // Apply color border
+      const colors = getColors(data);
+      const group = cvColorGroup(colors);
+      const borderColors = {W:'#d4c870',U:'#3a78c0',B:'#6040a0',R:'#c03820',G:'#208840',M:COLOR_HEX.W,C:'#888078'};
+      if (group === 'M') card.style.borderBottomColor = 'var(--gold)';
+      else card.style.borderBottomColor = borderColors[group] || '#888';
+      card.style.borderBottomWidth = '3px';
+      card.style.borderBottomStyle = 'solid';
+    });
+
+    card.addEventListener('mouseenter', e => showPreview(name, e));
+    card.addEventListener('mousemove', e => posPreview(e));
+    card.addEventListener('mouseleave', hidePreview);
+
+    grid.appendChild(card);
   });
 }
 
