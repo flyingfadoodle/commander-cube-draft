@@ -1315,7 +1315,7 @@ function renderCubeViewer() {
     if (cvSearch && !name.toLowerCase().includes(cvSearch)) return false;
     if (cvFilter === 'all') return true;
     const colors = cvGetColors(name);
-    if (colors === null) return true; // show unloaded cards
+    if (colors === null) return false; // hide unloaded cards from color filters
     const group = cvColorGroup(colors);
     return group === cvFilter;
   });
@@ -1425,13 +1425,18 @@ function renderChecklistView() {
     return cvColorGroup(colors) === cvFilter;
   });
 
-  // Group by color section
+  // Group by color section — only place cards with loaded data
   const groups = {};
   COLOR_SECTIONS.forEach(s => groups[s.key] = []);
+  const unloaded = [];
 
   filtered.forEach(name => {
     const colors = cvGetColors(name);
-    const group = colors === null ? 'C' : cvColorGroup(colors);
+    if (colors === null) {
+      unloaded.push(name); // data not yet loaded — don't guess color
+      return;
+    }
+    const group = cvColorGroup(colors);
     if (groups[group]) groups[group].push(name);
     else groups['C'].push(name);
   });
@@ -1449,7 +1454,8 @@ function renderChecklistView() {
   // Summary line
   const summary = document.createElement('div');
   summary.style.cssText = 'font-size:11px;color:var(--ink3);margin-bottom:12px;column-span:all;';
-  summary.textContent = `${totalFiltered} cards · ${totalChecked} checked`;
+  const loadedCount = totalFiltered - unloaded.length;
+  summary.textContent = `${totalFiltered} cards · ${totalChecked} checked${unloaded.length ? ` · loading ${unloaded.length}…` : ''}`;
   el.appendChild(summary);
 
   COLOR_SECTIONS.forEach(section => {
@@ -1508,6 +1514,32 @@ function renderChecklistView() {
 
     el.appendChild(sec);
   });
+
+  // Show unloaded cards in a separate section at the bottom
+  if (unloaded.length > 0 && cvFilter === 'all') {
+    const sec = document.createElement('div');
+    sec.className = 'cl-section';
+    const lbl = document.createElement('div');
+    lbl.className = 'cl-section-label';
+    lbl.innerHTML = `<div class="cl-pip" style="background:var(--border2)"></div>Loading… (${unloaded.length})`;
+    sec.appendChild(lbl);
+    unloaded.sort().forEach(name => {
+      const row = document.createElement('div');
+      row.className = 'cl-row';
+      row.style.opacity = '0.4';
+      const nameEl = document.createElement('div');
+      nameEl.className = 'cl-name';
+      nameEl.textContent = name;
+      const spinner = document.createElement('div');
+      spinner.className = 'cl-type';
+      spinner.textContent = '…';
+      row.appendChild(document.createElement('div')); // spacer for check
+      row.appendChild(nameEl);
+      row.appendChild(spinner);
+      sec.appendChild(row);
+    });
+    el.appendChild(sec);
+  }
 
   document.getElementById('cv-count').textContent = `${filtered.length} cards`;
 }
