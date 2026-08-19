@@ -58,26 +58,27 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
 .pack-sub{font-size:13px;color:var(--ink3);}
 .pack-instruction{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--ink2);margin-bottom:14px;}
 .pack-instruction b{color:var(--gold);}
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;}
 
 /* card display */
 .card{
-  background:var(--surface);border:1px solid var(--border2);border-radius:8px;
-  padding:10px;cursor:pointer;transition:all .15s;position:relative;
-  display:flex;flex-direction:column;gap:4px;
-  min-height:80px;
+  background:var(--surface);border:1px solid var(--border2);border-radius:7px;
+  padding:10px 12px;cursor:pointer;transition:all .12s;position:relative;
+  display:flex;flex-direction:column;gap:3px;
 }
-.card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.4);}
+.card:hover{border-color:var(--gold);background:var(--surface2);}
 .card.selected{border-color:var(--gold);background:var(--surface3);box-shadow:0 0 0 2px var(--gold);}
 .card.selected2{border-color:#4a90d8;background:#1a2030;box-shadow:0 0 0 2px #4a90d8;}
-.card.commander-card{border-color:var(--gold2);}
-.card.commander-card::before{content:'★';position:absolute;top:4px;right:6px;font-size:10px;color:var(--gold);}
-.card-name{font-size:12px;font-weight:700;color:var(--ink);line-height:1.3;}
-.card-img{width:100%;border-radius:5px;display:block;aspect-ratio:5/7;object-fit:cover;background:var(--surface2);}
-.card-img-wrap{margin-bottom:6px;position:relative;}
-.card-img-placeholder{width:100%;aspect-ratio:5/7;background:var(--surface2);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--border2);}
-.card-badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:.04em;}
+.card.commander-card{border-left:3px solid var(--gold2);}
+.card-name{font-size:13px;font-weight:700;color:var(--ink);line-height:1.3;}
+.card-manacost{font-size:11px;color:var(--ink2);font-family:monospace;}
+.card-type{font-size:10px;color:var(--ink3);font-style:italic;margin-top:1px;}
+.card-text{font-size:11px;color:var(--ink2);line-height:1.5;margin-top:4px;border-top:1px solid var(--border);padding-top:4px;}
+.card-pt{font-size:11px;font-weight:700;color:var(--ink);text-align:right;margin-top:2px;}
+.card-loyalty{font-size:11px;font-weight:700;color:var(--blue);text-align:right;margin-top:2px;}
+.card-badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:.04em;margin-top:3px;}
 .badge-commander{background:rgba(200,160,64,.25);color:var(--gold);}
+.card-loading{font-size:10px;color:var(--ink3);font-style:italic;}
 
 /* pool / sidebar */
 .sidebar{border-left:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;overflow:hidden;min-height:0;}
@@ -88,14 +89,17 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
 .sb-pane.active{display:block;}
 .pool-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin:10px 0 6px;padding-bottom:3px;border-bottom:1px solid var(--border);}
 .pool-card{
-  display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:5px;
-  cursor:pointer;transition:background .1s;
-  border:1px solid transparent;margin-bottom:3px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+  padding:8px 10px;cursor:pointer;transition:background .1s;
+  margin-bottom:5px;
 }
-.pool-card:hover{background:var(--surface2);}
-.pool-card.is-commander{border-color:rgba(200,160,64,.3);}
-.pool-card-name{font-size:12px;color:var(--ink);flex:1;}
-.pool-cmd-star{color:var(--gold);font-size:11px;}
+.pool-card:hover{background:var(--surface3);border-color:var(--border2);}
+.pool-card.is-commander{border-left:3px solid var(--gold2);}
+.pool-card-name{font-size:12px;font-weight:700;color:var(--ink);}
+.pool-card-type{font-size:10px;color:var(--ink3);font-style:italic;}
+.pool-card-text{font-size:10px;color:var(--ink3);margin-top:3px;line-height:1.4;border-top:1px solid var(--border);padding-top:3px;}
+.pool-card-pt{font-size:10px;font-weight:700;color:var(--ink2);text-align:right;}
+.pool-cmd-star{color:var(--gold);font-size:10px;float:right;}
 .pool-empty{font-size:12px;color:var(--ink3);font-style:italic;padding:8px 0;}
 
 /* bot picks display */
@@ -134,7 +138,7 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
 /* card hover preview */
 #card-preview{
   position:fixed;z-index:500;pointer-events:none;
-  width:220px;border-radius:10px;overflow:hidden;
+  width:240px;border-radius:10px;overflow:hidden;
   box-shadow:0 8px 32px rgba(0,0,0,.6);
   display:none;
 }
@@ -162,10 +166,10 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
 <div id="setup">
   <div class="setup-card">
     <div class="setup-title">Commander Cube Draft</div>
-    <div class="setup-sub">Sam Black's cube · 817 cards · Commander Legends draft variant</div>
+    <div class="setup-sub">Commander Cube · 817 cards · Commander Legends draft variant</div>
 
     <div class="rules-box">
-      <b>Draft rules (Sam Black format):</b><br>
+      <b>Draft rules:</b><br>
       Draft <b>3 packs of 20 cards</b>, picking <b>2 cards per pick</b>. Build a <b>60-card deck</b> following Commander color identity rules. Your commander is drafted from packs — choose it after the draft. Each player gets one <b>Command Tower</b> added automatically. Mono-color commanders may splash a second color (up to 6 spells + lands).
     </div>
 
@@ -181,7 +185,7 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
     <div class="field">
       <label>Pack size</label>
       <select id="pack-size">
-        <option value="20" selected>20 cards (Sam Black standard)</option>
+        <option value="20" selected>20 cards (standard)</option>
         <option value="15">15 cards (4 packs, 4-player)</option>
       </select>
     </div>
@@ -195,7 +199,7 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
     <div class="field">
       <label>Cube list</label>
       <select id="cube-source" onchange="toggleImport()">
-        <option value="builtin">Sam Black's Commander Cube (built-in)</option>
+        <option value="builtin">Commander Cube (built-in)</option>
         <option value="import">Import custom cube list</option>
       </select>
     </div>
@@ -239,7 +243,7 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
       <div class="sb-pane" id="pane-bots"></div>
       <div class="sb-pane" id="pane-rules">
         <div style="font-size:12px;color:var(--ink3);line-height:1.8">
-          <p style="color:var(--gold);font-weight:700;margin-bottom:8px">Sam Black's Commander Cube Rules</p>
+          <p style="color:var(--gold);font-weight:700;margin-bottom:8px">Commander Cube Rules</p>
           <p><b style="color:var(--ink2)">Draft:</b> 3 packs of 20 cards, pick 2 per pick. All players draft simultaneously in a pod.</p><br>
           <p><b style="color:var(--ink2)">Packs pass:</b> left for pack 1, right for pack 2, left for pack 3.</p><br>
           <p><b style="color:var(--ink2)">Deck:</b> 60 cards, following Commander color identity rules. Commander is not included in the 60.</p><br>
@@ -260,8 +264,8 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:-apple-s
 <script src="cube.js"></script>
 <script>
 // ── STATE ──────────────────────────────────────────────────
-const SCRYFALL_BASE = 'https://api.scryfall.com/cards/named?fuzzy=';
-const imgCache = {};
+
+
 
 let state = null;
 
@@ -540,49 +544,83 @@ function onCardClick(name) {
   else document.getElementById('pick-info').textContent = `Selected ${picksChosen}/2: ${[state.sel1, state.sel2].filter(Boolean).join(', ')}`;
 }
 
-// ── CARD ELEMENT ───────────────────────────────────────────
-function buildCardEl(name, small = false) {
+// ── CARD DATA CACHE (Scryfall) ─────────────────────────────
+const cardDataCache = {};  // name -> {name, mana_cost, type_line, oracle_text, power, toughness, loyalty, image_uris}
+const cardDataQueue = {};
+const SCRYFALL_API = 'https://api.scryfall.com/cards/named?fuzzy=';
+
+function loadCardData(name, cb) {
+  if (cardDataCache[name]) { cb(cardDataCache[name]); return; }
+  if (cardDataQueue[name]) { cardDataQueue[name].push(cb); return; }
+  cardDataQueue[name] = [cb];
+  // Rate limit: Scryfall asks for 50-100ms between requests
+  const delay = Object.keys(cardDataQueue).length * 80;
+  setTimeout(() => {
+    fetch(SCRYFALL_API + encodeURIComponent(name))
+      .then(r => r.json())
+      .then(data => {
+        const card = {
+          name: data.name || name,
+          mana_cost: data.mana_cost || data.card_faces?.[0]?.mana_cost || '',
+          type_line: data.type_line || data.card_faces?.[0]?.type_line || '',
+          oracle_text: data.oracle_text || data.card_faces?.[0]?.oracle_text || '',
+          power: data.power || '',
+          toughness: data.toughness || '',
+          loyalty: data.loyalty || '',
+          image: data.image_uris?.normal || data.card_faces?.[0]?.image_uris?.normal || '',
+        };
+        cardDataCache[name] = card;
+        (cardDataQueue[name] || []).forEach(fn => fn(card));
+        delete cardDataQueue[name];
+      })
+      .catch(() => {
+        const fallback = { name, mana_cost:'', type_line:'', oracle_text:'', power:'', toughness:'', loyalty:'', image:'' };
+        cardDataCache[name] = fallback;
+        (cardDataQueue[name] || []).forEach(fn => fn(fallback));
+        delete cardDataQueue[name];
+      });
+  }, delay);
+}
+
+function formatMana(cost) {
+  // Convert {W}{U}{2} style to readable
+  return cost.replace(/[{}]/g,' ').replace(/\s+/g,' ').trim();
+}
+
+// ── CARD ELEMENT ────────────────────────────────────────────
+function buildCardEl(name) {
   const el = document.createElement('div');
   el.className = 'card' + (isCommander(name) ? ' commander-card' : '');
   if (name === state.sel1) el.classList.add('selected');
   if (name === state.sel2) el.classList.add('selected2');
   el.dataset.name = name;
 
-  // Image area
-  const imgWrap = document.createElement('div');
-  imgWrap.className = 'card-img-wrap';
-  const placeholder = document.createElement('div');
-  placeholder.className = 'card-img-placeholder';
-  placeholder.textContent = '🃏';
-  imgWrap.appendChild(placeholder);
-
-  // Lazy load scryfall image
-  if (imgCache[name]) {
-    const img = document.createElement('img');
-    img.className = 'card-img';
-    img.src = imgCache[name];
-    imgWrap.innerHTML = '';
-    imgWrap.appendChild(img);
-  } else {
-    // Load async
-    loadCardImage(name, (url) => {
-      imgCache[name] = url;
-      const existing = document.querySelectorAll(`.card[data-name="${CSS.escape(name)}"] .card-img-placeholder`);
-      existing.forEach(ph => {
-        const img = document.createElement('img');
-        img.className = 'card-img';
-        img.src = url;
-        ph.replaceWith(img);
-      });
-    });
-  }
-
-  el.appendChild(imgWrap);
-
+  // Name row immediately
+  const nameRow = document.createElement('div');
+  nameRow.style.display = 'flex';
+  nameRow.style.justifyContent = 'space-between';
+  nameRow.style.alignItems = 'baseline';
   const nameEl = document.createElement('div');
   nameEl.className = 'card-name';
   nameEl.textContent = name;
-  el.appendChild(nameEl);
+  const manaEl = document.createElement('div');
+  manaEl.className = 'card-manacost';
+  nameRow.appendChild(nameEl);
+  nameRow.appendChild(manaEl);
+  el.appendChild(nameRow);
+
+  const typeEl = document.createElement('div');
+  typeEl.className = 'card-type';
+  typeEl.textContent = '…';
+  el.appendChild(typeEl);
+
+  const textEl = document.createElement('div');
+  textEl.className = 'card-text';
+  el.appendChild(textEl);
+
+  const ptEl = document.createElement('div');
+  ptEl.className = 'card-pt';
+  el.appendChild(ptEl);
 
   if (isCommander(name)) {
     const badge = document.createElement('span');
@@ -591,7 +629,17 @@ function buildCardEl(name, small = false) {
     el.appendChild(badge);
   }
 
-  // Hover preview
+  // Load card data async
+  loadCardData(name, (data) => {
+    manaEl.textContent = formatMana(data.mana_cost);
+    typeEl.textContent = data.type_line;
+    textEl.textContent = data.oracle_text;
+    if (data.power) ptEl.textContent = `${data.power}/${data.toughness}`;
+    else if (data.loyalty) { ptEl.className = 'card-loyalty'; ptEl.textContent = `Loyalty: ${data.loyalty}`; }
+    else ptEl.textContent = '';
+  });
+
+  // Hover preview (full card image)
   el.addEventListener('mouseenter', (e) => showPreview(name, e));
   el.addEventListener('mousemove', (e) => posPreview(e));
   el.addEventListener('mouseleave', () => hidePreview());
@@ -599,34 +647,24 @@ function buildCardEl(name, small = false) {
   return el;
 }
 
-const imageLoadQueue = {};
-function loadCardImage(name, cb) {
-  if (imageLoadQueue[name]) { imageLoadQueue[name].push(cb); return; }
-  imageLoadQueue[name] = [cb];
-  const url = SCRYFALL_BASE + encodeURIComponent(name) + '&format=image&version=art_crop';
-  const img = new Image();
-  img.onload = () => { (imageLoadQueue[name] || []).forEach(fn => fn(url)); delete imageLoadQueue[name]; };
-  img.onerror = () => {
-    const fallback = 'https://via.placeholder.com/223x310/242018/c8a040?text=' + encodeURIComponent(name.substring(0, 20));
-    (imageLoadQueue[name] || []).forEach(fn => fn(fallback));
-    delete imageLoadQueue[name];
-  };
-  img.src = url;
-}
-
 function showPreview(name, e) {
   const prev = document.getElementById('card-preview');
   const img = document.getElementById('preview-img');
-  const url = imgCache[name] || (SCRYFALL_BASE + encodeURIComponent(name) + '&format=image');
-  img.src = url;
-  prev.style.display = 'block';
+  if (cardDataCache[name]?.image) {
+    img.src = cardDataCache[name].image;
+    prev.style.display = 'block';
+  } else {
+    loadCardData(name, (data) => {
+      if (data.image) { img.src = data.image; prev.style.display = 'block'; }
+    });
+  }
   posPreview(e);
 }
 function posPreview(e) {
   const prev = document.getElementById('card-preview');
   let x = e.clientX + 16, y = e.clientY + 16;
-  if (x + 220 > window.innerWidth) x = e.clientX - 236;
-  if (y + 310 > window.innerHeight) y = e.clientY - 326;
+  if (x + 240 > window.innerWidth) x = e.clientX - 256;
+  if (y + 340 > window.innerHeight) y = e.clientY - 356;
   prev.style.left = x + 'px';
   prev.style.top = y + 'px';
 }
@@ -662,7 +700,40 @@ function renderPool() {
 function makePoolCard(name, isCmd) {
   const el = document.createElement('div');
   el.className = 'pool-card' + (isCmd ? ' is-commander' : '');
-  el.innerHTML = `${isCmd ? '<span class="pool-cmd-star">★</span>' : ''}<span class="pool-card-name">${name}</span>`;
+
+  const nameRow = document.createElement('div');
+  nameRow.style.display = 'flex';
+  nameRow.style.justifyContent = 'space-between';
+  const nameEl = document.createElement('span');
+  nameEl.className = 'pool-card-name';
+  nameEl.textContent = name;
+  const star = document.createElement('span');
+  if (isCmd) { star.className = 'pool-cmd-star'; star.textContent = '★'; }
+  nameRow.appendChild(nameEl);
+  if (isCmd) nameRow.appendChild(star);
+  el.appendChild(nameRow);
+
+  const typeEl = document.createElement('div');
+  typeEl.className = 'pool-card-type';
+  typeEl.textContent = '…';
+  el.appendChild(typeEl);
+
+  const textEl = document.createElement('div');
+  textEl.className = 'pool-card-text';
+  el.appendChild(textEl);
+
+  const ptEl = document.createElement('div');
+  ptEl.className = 'pool-card-pt';
+  el.appendChild(ptEl);
+
+  loadCardData(name, (data) => {
+    typeEl.textContent = (formatMana(data.mana_cost) ? formatMana(data.mana_cost) + ' · ' : '') + data.type_line;
+    textEl.textContent = data.oracle_text;
+    if (data.power) ptEl.textContent = `${data.power}/${data.toughness}`;
+    else if (data.loyalty) ptEl.textContent = `[${data.loyalty}]`;
+    else ptEl.textContent = '';
+  });
+
   el.addEventListener('mouseenter', (e) => showPreview(name, e));
   el.addEventListener('mousemove', (e) => posPreview(e));
   el.addEventListener('mouseleave', () => hidePreview());
@@ -796,7 +867,7 @@ function renderDone() {
   const grid = document.createElement('div');
   grid.className = 'cards-grid';
   state.pools[state.myIdx].forEach(name => {
-    const el = buildCardEl(name, true);
+    const el = buildCardEl(name);
     el.style.cursor = 'default';
     if (name === state.commander) el.style.outline = '2px solid var(--gold)';
     grid.appendChild(el);
